@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@qdrant/js-client-rest": "^1.7.0",
+    "fs": "^0.0.1-security",
     "next": "14.0.4",
     "node": "^21.2.0",
+    "openai": "^4.24.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "transformers": "^3.1.0"
   }
 }
