@@ -15,8 +15,21 @@ const IndexPage = () => {
       });
 
       if (res.status === 200) {
-        const reader = res.body.getReader();
-        let tempText = "";
+        const data = await res.json(); // 获取分词后的数据
+
+        // 将获取到的数据作为参数发送到另一个 API
+        const aiRes = await fetch("/api/ai", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ data }), // 将获取到的数据作为参数发送给 AI API
+        });
+
+        if (aiRes.status === 200) {
+          const aiData = await aiRes.json();
+          setResponse(aiData); // 设置响应数据
+        }
 
         const processData = async ({ done, value }) => {
           if (done) {
