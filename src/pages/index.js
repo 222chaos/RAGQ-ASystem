@@ -16,14 +16,13 @@ const IndexPage = () => {
 
       if (res.status === 200) {
         const data = await res.json(); // 获取分词后的数据
-
-        // 将获取到的数据作为参数发送到另一个 API
+        console.log(data);
         const aiRes = await fetch("/api/ai", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ data }), // 将获取到的数据作为参数发送给 AI API
+          body: JSON.stringify({ data }),
         });
 
         if (aiRes.status === 200) {
