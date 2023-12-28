@@ -26,8 +26,22 @@ const IndexPage = () => {
         });
 
         if (aiRes.status === 200) {
-          const aiData = await aiRes.json();
-          setResponse(aiData); // 设置响应数据
+          try {
+            const queryRes = await fetch("/api/query", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ query }),
+            });
+
+            if (queryRes.status === 200) {
+              const queryData = await queryRes.json();
+              console.log("queryData=====>", queryData);
+            }
+          } catch (queryError) {
+            console.error("Error querying /api/query:", queryError);
+          }
         }
 
         const processData = async ({ done, value }) => {
