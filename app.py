@@ -34,6 +34,10 @@ def fenci():
         # 根据 \n\t 分隔文本数据并返回数组
         text_array = result[OutputKeys.TEXT].split('\n\t')
 
+        # 如果最后一项为空字符串，则删除最后一项
+        if text_array[-1] == '':
+            text_array.pop()
+
         # 返回处理结果数组
         return jsonify(text_array)
 

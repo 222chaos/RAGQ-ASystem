@@ -11,12 +11,10 @@ const IndexPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query }),
       });
 
       if (res.status === 200) {
         const data = await res.json(); // 获取分词后的数据
-        console.log(data);
         const aiRes = await fetch("/api/ai", {
           method: "POST",
           headers: {
@@ -24,24 +22,22 @@ const IndexPage = () => {
           },
           body: JSON.stringify({ data }),
         });
+        try {
+          console.log("query=", query);
+          const queryRes = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query }),
+          });
 
-        if (aiRes.status === 200) {
-          try {
-            const queryRes = await fetch("/api/query", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ query }),
-            });
-
-            if (queryRes.status === 200) {
-              const queryData = await queryRes.json();
-              console.log("queryData=====>", queryData);
-            }
-          } catch (queryError) {
-            console.error("Error querying /api/query:", queryError);
+          if (queryRes.status === 200) {
+            const queryData = await queryRes.json();
+            console.log("queryData=====>", queryData);
           }
+        } catch (queryError) {
+          console.error("Error querying /api/query:", queryError);
         }
 
         const processData = async ({ done, value }) => {
@@ -55,8 +51,6 @@ const IndexPage = () => {
 
           return reader.read().then(processData);
         };
-
-        await processData(await reader.read());
       }
     } catch (error) {
       console.error("请求出错:", error);

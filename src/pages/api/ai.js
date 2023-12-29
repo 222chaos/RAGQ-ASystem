@@ -14,8 +14,6 @@ export default async function handler(req, res) {
     try {
       const { data } = await req.json(); // 从前端获取数据
 
-      console.log("Received data:", data);
-
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
@@ -58,7 +56,7 @@ export default async function handler(req, res) {
         for await (const item of data) {
           console.log("###############");
           // 使用前端传来的数据进行处理
-          console.log(item);
+          console.log(index, "  :  ", item);
 
           const embedding = await openai.embeddings.create({
             model: "text-embedding-ada-002",
@@ -66,7 +64,6 @@ export default async function handler(req, res) {
             encoding_format: "float",
           });
           const embeddingData = embedding.data[0].embedding;
-
           points.push({
             id: index,
             vector: embeddingData,
@@ -84,8 +81,6 @@ export default async function handler(req, res) {
 
       // 调用准备数据的函数
       await prepareData();
-
-      res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
       const res = new Response(
         JSON.stringify({

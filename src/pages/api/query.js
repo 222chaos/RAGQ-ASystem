@@ -41,11 +41,21 @@ export default async function handler(req, res) {
 
       res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Internal server error" + error.message });
+      const res = new Response(
+        JSON.stringify({
+          message: "Internal server error" + error.message,
+        }),
+        {
+          status: 500,
+        }
+      );
+      return res;
     }
   } else {
-    res.status(405).json({ message: "Method not allowed" });
+    const res = new Response({
+      status: 405,
+      statusText: "Method not allowed",
+    });
+    return res;
   }
 }
