@@ -9,11 +9,11 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const { data } = await req.json();
-      console.log("Received data:", data);
+      const { query } = await req.json();
+      console.log("Received data:", query);
       const embedding = await openai.embeddings.create({
         model: "text-embedding-ada-002",
-        input: data,
+        input: query,
         encoding_format: "float",
       });
       const embeddingData = embedding.data[0].embedding;
@@ -22,17 +22,14 @@ export default async function handler(req, res) {
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
       });
-
+      const collectionName = "test_collection";
       const queryDatabase = async () => {
-        const collectionName = "test_collection";
-
-        const result = await client.query({
+        const res1 = await client.search(collectionName, {
           vector: embeddingData,
-          collection_name: collectionName,
-          top: 10,
+          limit: 2,
         });
 
-        console.log("Query results:", result);
+        console.log("search result: ", res1);
 
         res.status(200).json({ message: "Query successful", result });
       };
