@@ -14,6 +14,8 @@ export default async function handler(req, res) {
     try {
       const { data } = await req.json(); // 从前端获取数据
 
+      console.log("Received data:", data);
+
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
@@ -55,15 +57,19 @@ export default async function handler(req, res) {
         const points = [];
         for await (const item of data) {
           console.log("###############");
-          // 使用前端传来的数据进行处理
-          console.log(index, "  :  ", item);
+          console.log(item);
 
-          const embedding = await openai.embeddings.create({
-            model: "text-embedding-ada-002",
-            input: item,
-            encoding_format: "float",
+          // 调用新的 API 路由来进行编码
+          const response = await fetch("http://localhost:3000/api/encode", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ item }), // 发送适当的数据给新的 API 路由
           });
-          const embeddingData = embedding.data[0].embedding;
+
+          const { embeddingData } = await response.json();
+
           points.push({
             id: index,
             vector: embeddingData,
@@ -72,15 +78,18 @@ export default async function handler(req, res) {
             },
           });
           index++;
-
-          await client.upsert(collectionName, {
-            points: points,
-          });
         }
+
+        // 在所有 points.push 操作完成后调用 client.upsert
+        await client.upsert(collectionName, {
+          points: points,
+        });
       };
 
       // 调用准备数据的函数
       await prepareData();
+
+      res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
       const res = new Response(
         JSON.stringify({
