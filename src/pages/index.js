@@ -13,11 +13,12 @@ const IndexPage = () => {
         },
         body: JSON.stringify({ query }),
       });
-
+      const data = await res.json();
+      console.log("Received data:", data);
       if (res.status === 200) {
         const data = await res.json(); // 获取分词后的数据
         console.log(data);
-        const aiRes = await fetch("/api/encode", {
+        const aiRes = await fetch("/api/ai", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
