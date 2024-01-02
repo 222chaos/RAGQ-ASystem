@@ -57,19 +57,16 @@ export default async function handler(req, res) {
         const points = [];
         for await (const item of data) {
           console.log("###############");
+          // 使用前端传来的数据进行处理
           console.log(item);
 
-          // 调用新的 API 路由来进行编码
-          const response = await fetch("http://localhost:3000/api/encode", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ item }), // 发送适当的数据给新的 API 路由
+          const embedding = await openai.embeddings.create({
+            model: "text-embedding-ada-002",
+            input: item,
+            encoding_format: "float",
           });
-
-          const { embeddingData } = await response.json();
-
+          const embeddingData = embedding.data[0].embedding;
+          console.log(embeddingData);
           points.push({
             id: index,
             vector: embeddingData,
@@ -78,12 +75,11 @@ export default async function handler(req, res) {
             },
           });
           index++;
-        }
 
-        // 在所有 points.push 操作完成后调用 client.upsert
-        await client.upsert(collectionName, {
-          points: points,
-        });
+          await client.upsert(collectionName, {
+            points: points,
+          });
+        }
       };
 
       // 调用准备数据的函数
