@@ -59,14 +59,14 @@ export default async function handler(req, res) {
           console.log("###############");
           // 使用前端传来的数据进行处理
           console.log(item);
-
+          console.log(index, " /////", item);
           const embedding = await openai.embeddings.create({
             model: "text-embedding-ada-002",
             input: item,
             encoding_format: "float",
           });
           const embeddingData = embedding.data[0].embedding;
-          console.log(embeddingData);
+          console.log(index, " /////", embeddingData);
           points.push({
             id: index,
             vector: embeddingData,
@@ -87,6 +87,8 @@ export default async function handler(req, res) {
 
       res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
+      console.log("error.message===>");
+      console.log(error);
       const res = new Response(
         JSON.stringify({
           message: "Internal server error" + error.message,
