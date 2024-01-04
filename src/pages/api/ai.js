@@ -66,7 +66,6 @@ export default async function handler(req, res) {
             encoding_format: "float",
           });
           const embeddingData = embedding.data[0].embedding;
-          console.log(index, " /////", embeddingData);
           points.push({
             id: index,
             vector: embeddingData,
@@ -87,8 +86,6 @@ export default async function handler(req, res) {
 
       res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
-      console.log("error.message===>");
-      console.log(error);
       const res = new Response(
         JSON.stringify({
           message: "Internal server error" + error.message,
