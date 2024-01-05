@@ -83,8 +83,6 @@ export default async function handler(req, res) {
 
       // 调用准备数据的函数
       await prepareData();
-
-      res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
       const res = new Response(
         JSON.stringify({

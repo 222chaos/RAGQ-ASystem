@@ -15,48 +15,47 @@ const IndexPage = () => {
       });
       const data = await res.json();
       console.log("Received data:", data);
-      if (res.status === 200) {
-        const aiRes = await fetch("/api/ai", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ data }),
-        });
 
-        if (aiRes.status === 200) {
-          try {
-            const queryRes = await fetch("/api/query", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ query }),
-            });
+      const aiRes = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data }),
+      });
 
-            if (queryRes.status === 200) {
-              const queryData = await queryRes.json();
-              console.log("queryData=====>", queryData);
-            }
-          } catch (queryError) {
-            console.error("Error querying /api/query:", queryError);
+      if (aiRes.status === 200) {
+        try {
+          const queryRes = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query }),
+          });
+
+          if (queryRes.status === 200) {
+            const queryData = await queryRes.json();
+            console.log("queryData=====>", queryData);
           }
+        } catch (queryError) {
+          console.error("Error querying /api/query:", queryError);
+        }
+      }
+
+      const processData = async ({ done, value }) => {
+        if (done) {
+          console.log("Stream finished");
+          return;
         }
 
-        const processData = async ({ done, value }) => {
-          if (done) {
-            console.log("Stream finished");
-            return;
-          }
+        tempText += new TextDecoder("utf-8").decode(value);
+        setResponse(tempText);
 
-          tempText += new TextDecoder("utf-8").decode(value);
-          setResponse(tempText);
+        return reader.read().then(processData);
+      };
 
-          return reader.read().then(processData);
-        };
-
-        await processData(await reader.read());
-      }
+      await processData(await reader.read());
     } catch (error) {
       console.error("请求出错:", error);
     }
