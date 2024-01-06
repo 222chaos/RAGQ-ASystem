@@ -5,17 +5,17 @@ const openai = new OpenAI({
   apiKey: process.env.API_KEY,
 });
 
-export const config = {
-  runtime: "edge",
-};
-
 export default async function handler(req, res) {
   if (req.method === "POST") {
+    const { content } = req.body;
+    console.log("content======>", content);
+    // 分隔文本，每50个字为一段
+    const chunkSize = 50;
+    const textChunks = [];
+    for (let i = 0; i < content.length; i += chunkSize) {
+      textChunks.push(content.substring(i, i + chunkSize));
+    }
     try {
-      const { data } = await req.json(); // 从前端获取数据
-
-      console.log("Received data:", data);
-
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
 
         let index = 0;
         const points = [];
-        for await (const item of data) {
+        for await (const item of textChunks) {
           console.log("###############");
           // 使用前端传来的数据进行处理
           console.log(item);
@@ -83,6 +83,7 @@ export default async function handler(req, res) {
 
       // 调用准备数据的函数
       await prepareData();
+      return 0;
     } catch (error) {
       const res = new Response(
         JSON.stringify({

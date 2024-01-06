@@ -1,78 +1,97 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { Button, Input } from "antd";
+
+const { TextArea } = Input;
 
 const IndexPage = () => {
+  const [content, setContent] = useState("");
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
 
-  const handleSubmit = async () => {
+  const handleContentSubmit = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/fenci", {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        body: JSON.stringify({ content }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("内容上传请求出错:", error);
+    }
+  };
+
+  const handleQuerySubmit = async () => {
+    try {
+      const queryRes = await fetch("/api/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ query }),
       });
-      const data = await res.json();
-      console.log("Received data:", data);
 
-      const aiRes = await fetch("/api/ai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ data }),
-      });
-
-      if (aiRes.status === 200) {
-        try {
-          const queryRes = await fetch("/api/query", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ query }),
-          });
-
-          if (queryRes.status === 200) {
-            const queryData = await queryRes.json();
-            console.log("queryData=====>", queryData);
-          }
-        } catch (queryError) {
-          console.error("Error querying /api/query:", queryError);
-        }
-      }
-
-      const processData = async ({ done, value }) => {
-        if (done) {
-          console.log("Stream finished");
-          return;
-        }
-
-        tempText += new TextDecoder("utf-8").decode(value);
-        setResponse(tempText);
-
-        return reader.read().then(processData);
-      };
-
-      await processData(await reader.read());
+      const queryData = await queryRes.json();
+      console.log("queryData=====>", queryData);
+      setResponse(queryData);
     } catch (error) {
-      console.error("请求出错:", error);
+      console.error("查询请求出错:", error);
     }
   };
 
   return (
     <div>
       <h1>################</h1>
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="请输入问题"
-      />
-      <button onClick={handleSubmit}>提交</button>
+      <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
+        <TextArea
+          showCount
+          maxLength={100}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="请上传内容"
+          style={{ height: 120, resize: "none" }}
+        />
+        <br />
+        <br />
+        <Button
+          style={{ height: "50px", width: "300px" }}
+          onClick={handleContentSubmit}
+          type="primary"
+        >
+          上传
+        </Button>
+      </div>
+      <br />
+      <br />
+      <div
+        style={{
+          margin: "auto",
+          width: "50%",
+          textAlign: "center",
+          marginTop: "20px",
+        }}
+      >
+        <Input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="请输入查询内容"
+          style={{ width: "100%", height: "50px" }}
+        />
+        <br />
+        <br />
+        <Button
+          style={{ height: "50px", width: "300px" }}
+          onClick={handleQuerySubmit}
+          type="primary"
+        >
+          查询
+        </Button>
+      </div>
       <div>
-        <h2>##########：</h2>
+        <h2>结果：</h2>
+
         <div>{response}</div>
       </div>
     </div>

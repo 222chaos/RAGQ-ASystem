@@ -30,14 +30,11 @@ export default async function handler(req, res) {
         });
 
         console.log("search result: ", res1);
-
-        res.status(200).json({ message: "Query successful", result });
       };
 
       await queryDatabase();
-
-      res.status(200).json({ message: "Data processed successfully" });
     } catch (error) {
+      console.log(error);
       const res = new Response(
         JSON.stringify({
           message: "Internal server error" + error.message,
