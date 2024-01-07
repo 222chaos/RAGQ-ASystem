@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const { content } = req.body;
     console.log("content======>", content);
     // 分隔文本，每50个字为一段
-    const chunkSize = 50;
+    const chunkSize = 100;
     const textChunks = [];
     for (let i = 0; i < content.length; i += chunkSize) {
       textChunks.push(content.substring(i, i + chunkSize));
@@ -58,7 +58,6 @@ export default async function handler(req, res) {
         for await (const item of textChunks) {
           console.log("###############");
           // 使用前端传来的数据进行处理
-          console.log(item);
           console.log(index, " /////", item);
           const embedding = await openai.embeddings.create({
             model: "text-embedding-ada-002",
@@ -83,7 +82,7 @@ export default async function handler(req, res) {
 
       // 调用准备数据的函数
       await prepareData();
-      return 0;
+      return res.status(200).json(textChunks);
     } catch (error) {
       const res = new Response(
         JSON.stringify({

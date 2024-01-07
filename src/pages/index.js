@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Button, Input } from "antd";
 
 const { TextArea } = Input;
-
+const utf8Decoder = new TextDecoder("utf-8");
 const IndexPage = () => {
   const [content, setContent] = useState("");
   const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("");
+  const [response, setResponse] = useState("...");
+  const [array, setArray] = useState([]);
 
   const handleContentSubmit = async () => {
     try {
@@ -17,26 +18,49 @@ const IndexPage = () => {
           "Content-Type": "application/json",
         },
       });
+      const data = await res.json();
+      console.log("array=====>", data);
+      setArray(data);
     } catch (error) {
       console.error("内容上传请求出错:", error);
     }
   };
 
   const handleQuerySubmit = async () => {
+    setResponse("");
+    let tempText = "";
+    console.log("array==>", array);
+    const requestData = {
+      query: query,
+      array: array,
+    };
     try {
       const queryRes = await fetch("/api/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify(requestData),
       });
+      const reader = queryRes.body.getReader();
 
-      const queryData = await queryRes.json();
-      console.log("queryData=====>", queryData);
-      setResponse(queryData);
+      const processData = ({ done, value: chunk }) => {
+        if (done) {
+          console.log("Stream finished");
+          return;
+        }
+        setResponse((response) => {
+          return response + utf8Decoder.decode(chunk, { stream: true });
+        });
+
+        tempText += utf8Decoder.decode(chunk, { stream: true });
+
+        return reader.read().then(processData);
+      };
+      await processData(await reader.read());
     } catch (error) {
-      console.error("查询请求出错:", error);
+      console.log(error);
+      console.error("内容上传请求出错:", error);
     }
   };
 
@@ -46,7 +70,6 @@ const IndexPage = () => {
       <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
         <TextArea
           showCount
-          maxLength={100}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="请上传内容"
@@ -91,7 +114,6 @@ const IndexPage = () => {
       </div>
       <div>
         <h2>结果：</h2>
-
         <div>{response}</div>
       </div>
     </div>
