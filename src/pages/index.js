@@ -19,8 +19,13 @@ const IndexPage = () => {
         },
       });
       const data = await res.json();
-      console.log("array=====>", data);
       setArray(data);
+
+      setResponse("上传已完成");
+
+      setTimeout(() => {
+        setResponse("");
+      }, 2000);
     } catch (error) {
       console.error("内容上传请求出错:", error);
     }
@@ -29,7 +34,7 @@ const IndexPage = () => {
   const handleQuerySubmit = async () => {
     setResponse("");
     let tempText = "";
-    console.log("array==>", array);
+
     const requestData = {
       query: query,
       array: array,

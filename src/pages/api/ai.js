@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const { content } = req.body;
     console.log("content======>", content);
     // 分隔文本，每50个字为一段
-    const chunkSize = 100;
+    const chunkSize = 150;
     const textChunks = [];
     for (let i = 0; i < content.length; i += chunkSize) {
       textChunks.push(content.substring(i, i + chunkSize));
