@@ -2,7 +2,7 @@ export default function handler(req, res) {
   if (req.method === "POST") {
     const { text } = req.body;
 
-    // 分隔文本，每50个字为一段
+    // 分隔文本，每5个字为一段
     const chunkSize = 5;
     const textChunks = [];
     for (let i = 0; i < 20; i += chunkSize) {

@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const { content } = req.body;
     console.log("content======>", content);
-    // 分隔文本，每50个字为一段
+    // 分隔文本，每150个字为一段
     const chunkSize = 150;
     const textChunks = [];
     for (let i = 0; i < content.length; i += chunkSize) {
