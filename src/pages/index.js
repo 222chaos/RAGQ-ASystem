@@ -9,8 +9,11 @@ const IndexPage = () => {
   const [response, setResponse] = useState("...");
   const [array, setArray] = useState([]);
 
+  const [uploading, setUploading] = useState(false);
+
   const handleContentSubmit = async () => {
     try {
+      setUploading(true);
       const res = await fetch("/api/ai", {
         method: "POST",
         body: JSON.stringify({ content }),
@@ -28,9 +31,10 @@ const IndexPage = () => {
       }, 2000);
     } catch (error) {
       console.error("内容上传请求出错:", error);
+    } finally {
+      setUploading(false);
     }
   };
-
   const handleQuerySubmit = async () => {
     setResponse("");
     let tempText = "";
@@ -106,6 +110,7 @@ const IndexPage = () => {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="请输入查询内容"
           style={{ width: "100%", height: "50px" }}
+          disabled={uploading}
         />
         <br />
         <br />
@@ -113,6 +118,7 @@ const IndexPage = () => {
           style={{ height: "50px", width: "300px" }}
           onClick={handleQuerySubmit}
           type="primary"
+          disabled={uploading}
         >
           查询
         </Button>
