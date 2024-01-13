@@ -9,12 +9,25 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const { content } = req.body;
     console.log("content======>", content);
-    // 分隔文本，每150个字为一段
+
     const chunkSize = 150;
+    let counter = 0;
+    let startIndex = 0;
     const textChunks = [];
-    for (let i = 0; i < content.length; i += chunkSize) {
-      textChunks.push(content.substring(i, i + chunkSize));
+
+    for (let i = 0; i < content.length; i++) {
+      counter++;
+      if (content[i] === "。" || counter === chunkSize) {
+        textChunks.push(content.substring(startIndex, i + 1));
+        counter = 0;
+        startIndex = i + 1;
+      }
     }
+
+    if (startIndex < content.length) {
+      textChunks.push(content.substring(startIndex));
+    }
+
     try {
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
@@ -56,9 +69,6 @@ export default async function handler(req, res) {
         let index = 0;
         const points = [];
         for await (const item of textChunks) {
-          console.log("###############");
-          // 使用前端传来的数据进行处理
-          console.log(index, " /////", item);
           const embedding = await openai.embeddings.create({
             model: "text-embedding-ada-002",
             input: item,
