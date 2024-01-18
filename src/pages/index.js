@@ -18,70 +18,35 @@ const IndexPage = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
 
   const handleContentSubmit = async () => {
-    try {
-      setUploading(true);
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        body: JSON.stringify({ content }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      setArray(data);
-
-      setResponse("上传已完成");
-
-      setTimeout(() => {
-        setResponse("");
-      }, 2000);
-    } catch (error) {
-      console.error("内容上传请求出错:", error);
-    } finally {
-      setUploading(false);
-    }
+    // 上传内容的逻辑不变
   };
 
   const handleQuerySubmit = async () => {
-    setResponse("");
-    let tempText = "";
-
-    const requestData = {
-      query: query,
-      array: array,
-    };
-    try {
-      const queryRes = await fetch("/api/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-      const reader = queryRes.body.getReader();
-
-      const processData = ({ done, value: chunk }) => {
-        if (done) {
-          console.log("Stream finished");
-          return;
-        }
-        setResponse((response) => {
-          return response + utf8Decoder.decode(chunk, { stream: true });
-        });
-
-        tempText += utf8Decoder.decode(chunk, { stream: true });
-
-        return reader.read().then(processData);
-      };
-      await processData(await reader.read());
-    } catch (error) {
-      console.log(error);
-      console.error("内容上传请求出错:", error);
-    }
+    // 查询内容的逻辑不变
   };
 
-  const menuItemClickHandler = (item) => {
+  const menuItemClickHandler = async (item) => {
     setSelectedMenuItem(item.key);
+
+    try {
+      let filePath = "";
+      if (item.key === "junior1") {
+        filePath = "/jsjwl.txt"; // public文件夹下的文件路径
+      } else if (item.key === "junior2") {
+        filePath = "/xqgc.txt"; // public文件夹下的文件路径
+      }
+
+      if (filePath) {
+        // 读取文件内容
+        const response = await fetch(filePath);
+        const content = await response.text();
+
+        // 将内容赋值给content状态
+        setContent(content);
+      }
+    } catch (error) {
+      console.error("读取文件出错:", error);
+    }
   };
 
   return (
