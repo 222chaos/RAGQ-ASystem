@@ -11,6 +11,7 @@ const utf8Decoder = new TextDecoder("utf-8");
 
 const IndexPage = () => {
   const [content, setContent] = useState("");
+  const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("...");
   const [array, setArray] = useState([]);
@@ -92,16 +93,25 @@ const IndexPage = () => {
       }
 
       if (filePath) {
-        // 读取文件内容
+        setUploading(true);
         const response = await fetch(filePath);
         const contentBuffer = await response.arrayBuffer();
-
-        // 使用 utf8Decoder 解码
         const content = utf8Decoder.decode(contentBuffer);
-        setContent(content);
+        setText(content);
+        const aiRes = await fetch("/api/ai", {
+          method: "POST",
+          body: JSON.stringify({ content: text }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const aiData = await aiRes.json();
+        setArray(aiData);
       }
     } catch (error) {
-      console.error("读取文件出错:", error);
+      console.error("读取文件或调用api/ai出错:", error);
+    } finally {
+      setUploading(false);
     }
   };
 

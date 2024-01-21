@@ -8,9 +8,10 @@ const openai = new OpenAI({
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const { content } = req.body;
+
     console.log("content======>", content);
     // 分隔文本，每150个字为一段
-    const chunkSize = 150;
+    const chunkSize = 2000;
     const textChunks = [];
     for (let i = 0; i < content.length; i += chunkSize) {
       textChunks.push(content.substring(i, i + chunkSize));
@@ -80,25 +81,14 @@ export default async function handler(req, res) {
         }
       };
 
-      // 调用准备数据的函数
       await prepareData();
-      return res.status(200).json(textChunks);
+
+      res.status(200).json({ data: textChunks });
     } catch (error) {
-      const res = new Response(
-        JSON.stringify({
-          message: "Internal server error" + error.message,
-        }),
-        {
-          status: 500,
-        }
-      );
-      return res;
+      console.error("Error:", error.message, "123123");
+      res.status(500).json({ message: "Internal server error" });
     }
   } else {
-    const res = new Response({
-      status: 405,
-      statusText: "Method not allowed",
-    });
-    return res;
+    res.status(405).json({ status: "Method not allowed" });
   }
 }
