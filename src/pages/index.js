@@ -132,8 +132,8 @@ const IndexPage = () => {
           <Menu.Item key="sophomore2">课程2</Menu.Item>
         </Menu.SubMenu>
         <Menu.SubMenu key="junior" icon={<SearchOutlined />} title="大三">
-          <Menu.Item key="junior1">课程1</Menu.Item>
-          <Menu.Item key="junior2">课程2</Menu.Item>
+          <Menu.Item key="junior1">计算机网络</Menu.Item>
+          <Menu.Item key="junior2">需求工程</Menu.Item>
         </Menu.SubMenu>
         <Menu.SubMenu key="senior" icon={<SearchOutlined />} title="大四">
           <Menu.Item key="senior1">课程1</Menu.Item>
@@ -142,7 +142,7 @@ const IndexPage = () => {
       </Menu>
 
       <div style={{ marginLeft: "220px" }}>
-        <h1>################</h1>
+        <h1>、</h1>
         <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
           <TextArea
             showCount
