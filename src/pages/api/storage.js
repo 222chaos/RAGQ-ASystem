@@ -58,7 +58,7 @@ export default async function handler(req, res) {
         const points = [];
         for await (const item of textChunks) {
           console.log("###############");
-          // 使用前端传来的数据进行处理
+
           console.log(index, " /////", item);
           const embedding = await openai.embeddings.create({
             model: "text-embedding-ada-002",

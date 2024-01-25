@@ -64,7 +64,6 @@ export default async function handler(req, res) {
             // 完成后，关闭流
             controller.close();
           } catch (e) {
-            // 如果在执行过程中发生错误，向流发送错误
             controller.error(e);
           }
         },

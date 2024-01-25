@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
-import {
-  UploadOutlined,
-  SearchOutlined,
-  NumberOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
@@ -21,7 +17,7 @@ const IndexPage = () => {
   const handleContentSubmit = async () => {
     try {
       setUploading(true);
-      const res = await fetch("/api/ai", {
+      const res = await fetch("/api/storage", {
         method: "POST",
         body: JSON.stringify({ content }),
         headers: {
@@ -98,7 +94,7 @@ const IndexPage = () => {
         const contentBuffer = await response.arrayBuffer();
         const content = utf8Decoder.decode(contentBuffer);
         setText(content);
-        const aiRes = await fetch("/api/ai", {
+        const aiRes = await fetch("/api/storage", {
           method: "POST",
           body: JSON.stringify({ content: text }),
           headers: {
