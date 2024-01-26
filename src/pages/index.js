@@ -139,24 +139,7 @@ const IndexPage = () => {
 
       <div style={{ marginLeft: "220px" }}>
         <h1>、</h1>
-        <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
-          <TextArea
-            showCount
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="请上传内容"
-            style={{ height: 120, resize: "none" }}
-          />
-          <br />
-          <br />
-          <Button
-            style={{ height: "50px", width: "300px" }}
-            onClick={handleContentSubmit}
-            type="primary"
-          >
-            上传
-          </Button>
-        </div>
+
         <br />
         <br />
         <div
