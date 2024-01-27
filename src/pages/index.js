@@ -14,7 +14,7 @@ const IndexPage = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
 
-  const handleContentSubmit = async () => {
+  /* const handleContentSubmit = async () => {
     try {
       setUploading(true);
       const res = await fetch("/api/storage", {
@@ -38,7 +38,7 @@ const IndexPage = () => {
       setUploading(false);
     }
   };
-
+*/
   const handleQuerySubmit = async () => {
     setResponse("");
     let tempText = "";
