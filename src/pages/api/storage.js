@@ -10,7 +10,6 @@ export default async function handler(req, res) {
     const { content } = req.body;
 
     console.log("content======>", content);
-    // 分隔文本，每150个字为一段
     const chunkSize = 150;
     const textChunks = [];
     for (let i = 0; i < content.length; i += chunkSize) {
@@ -70,7 +69,7 @@ export default async function handler(req, res) {
             id: index,
             vector: embeddingData,
             payload: {
-              text: ["test"],
+              text: [""],
             },
           });
           index++;
