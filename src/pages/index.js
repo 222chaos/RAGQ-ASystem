@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  SearchOutlined,
+  NumberOutlined,
+} from "@ant-design/icons";
 
 const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
@@ -14,10 +18,10 @@ const IndexPage = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
 
-  /* const handleContentSubmit = async () => {
+  const handleContentSubmit = async () => {
     try {
       setUploading(true);
-      const res = await fetch("/api/storage", {
+      const res = await fetch("http://127.0.0.1:5000/fenci", {
         method: "POST",
         body: JSON.stringify({ content }),
         headers: {
@@ -38,7 +42,7 @@ const IndexPage = () => {
       setUploading(false);
     }
   };
-*/
+
   const handleQuerySubmit = async () => {
     setResponse("");
     let tempText = "";
@@ -94,7 +98,7 @@ const IndexPage = () => {
         const contentBuffer = await response.arrayBuffer();
         const content = utf8Decoder.decode(contentBuffer);
         setText(content);
-        const aiRes = await fetch("/api/storage", {
+        const aiRes = await fetch("/api/ai", {
           method: "POST",
           body: JSON.stringify({ content: text }),
           headers: {
@@ -139,7 +143,24 @@ const IndexPage = () => {
 
       <div style={{ marginLeft: "220px" }}>
         <h1>、</h1>
-
+        <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
+          <TextArea
+            showCount
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="请上传内容"
+            style={{ height: 120, resize: "none" }}
+          />
+          <br />
+          <br />
+          <Button
+            style={{ height: "50px", width: "300px" }}
+            onClick={handleContentSubmit}
+            type="primary"
+          >
+            上传
+          </Button>
+        </div>
         <br />
         <br />
         <div
