@@ -46,9 +46,15 @@ export default async function handler(req, res) {
 
     console.log("content======>", content);
 
-    // 根据换行符分割文本
-    const textChunks = content.split("\n");
+    let textChunks = content.split("\n");
 
+    // 合并内容，确保每个item长度不少于200字
+    for (let i = 0; i < textChunks.length - 1; i++) {
+      while ((textChunks[i] + textChunks[i + 1]).length < 200) {
+        textChunks[i] += "\n" + textChunks[i + 1];
+        textChunks.splice(i + 1, 1);
+      }
+    }
     try {
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
@@ -89,8 +95,6 @@ export default async function handler(req, res) {
 
         let index = 0;
         const points = [];
-        let currentChunk = "";
-
         for await (const item of textChunks) {
           console.log("###############");
 
@@ -101,39 +105,6 @@ export default async function handler(req, res) {
             encoding_format: "float",
           });
           const embeddingData = embedding.data[0].embedding;
-
-          if (currentChunk.length + item.length > 200) {
-            // 如果当前段落长度超过200字，就分割并重置当前段落
-            points.push({
-              id: index,
-              vector: embeddingData,
-              payload: {
-                text: [""],
-              },
-            });
-
-            await client.upsert(collectionName, {
-              points: points,
-            });
-
-            currentChunk = "";
-            points.length = 0; // 清空数组
-            index++;
-          } else {
-            // 否则将当前段落继续拼接
-            currentChunk += item;
-          }
-        }
-
-        // 处理最后一段
-        if (currentChunk.length > 0) {
-          const embedding = await openai.embeddings.create({
-            model: "text-embedding-ada-002",
-            input: currentChunk,
-            encoding_format: "float",
-          });
-          const embeddingData = embedding.data[0].embedding;
-
           points.push({
             id: index,
             vector: embeddingData,
@@ -141,6 +112,7 @@ export default async function handler(req, res) {
               text: index,
             },
           });
+          index++;
 
           await client.upsert(collectionName, {
             points: points,
