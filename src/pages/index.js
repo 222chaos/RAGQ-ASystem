@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
-import {
-  UploadOutlined,
-  SearchOutlined,
-  NumberOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
@@ -13,7 +9,7 @@ const IndexPage = () => {
   const [content, setContent] = useState("");
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("...");
+  const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
@@ -80,48 +76,17 @@ const IndexPage = () => {
       console.error("内容上传请求出错:", error);
     }
   };
-
-  const menuItemClickHandler = async (item) => {
-    setSelectedMenuItem(item.key);
-
-    try {
-      let filePath = "";
-      if (item.key === "junior1") {
-        filePath = "/jsjwl.txt";
-      } else if (item.key === "junior2") {
-        filePath = "/xqgc.txt";
-      }
-
-      if (filePath) {
-        setUploading(true);
-        const response = await fetch(filePath);
-        const contentBuffer = await response.arrayBuffer();
-        const content = utf8Decoder.decode(contentBuffer);
-        setText(content);
-        const aiRes = await fetch("/api/ai", {
-          method: "POST",
-          body: JSON.stringify({ content: text }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const aiData = await aiRes.json();
-        setArray(aiData);
-      }
-    } catch (error) {
-      console.error("读取文件或调用api/ai出错:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div>
       <Menu
         mode="horizontal"
         style={{ textAlign: "center" }}
         selectedKeys={[selectedMenuItem]}
-        onClick={menuItemClickHandler}
+        onClick={
+          {
+            /**待修改 */
+          }
+        }
       >
         <Menu.SubMenu key="freshman" icon={<SearchOutlined />} title="大一">
           <Menu.Item key="freshiman1">课程1</Menu.Item>
