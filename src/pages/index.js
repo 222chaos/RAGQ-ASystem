@@ -76,17 +76,41 @@ const IndexPage = () => {
       console.error("内容上传请求出错:", error);
     }
   };
+
+  const menuItemClickHandler = async (item) => {
+    setSelectedMenuItem(item.key);
+
+    try {
+      if (filePath) {
+        setUploading(true);
+        const response = await fetch(filePath);
+        const contentBuffer = await response.arrayBuffer();
+        const content = utf8Decoder.decode(contentBuffer);
+        setText(content);
+        const aiRes = await fetch("/api/ai", {
+          method: "POST",
+          body: JSON.stringify({ content: text }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const aiData = await aiRes.json();
+        setArray(aiData);
+      }
+    } catch (error) {
+      console.error("读取文件或调用api/ai出错:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div>
       <Menu
         mode="horizontal"
         style={{ textAlign: "center" }}
         selectedKeys={[selectedMenuItem]}
-        onClick={
-          {
-            /**待修改 */
-          }
-        }
+        onClick={menuItemClickHandler}
       >
         <Menu.SubMenu key="freshman" icon={<SearchOutlined />} title="大一">
           <Menu.Item key="freshiman1">课程1</Menu.Item>
