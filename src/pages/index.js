@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
-const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
 
 const IndexPage = () => {
@@ -26,8 +25,6 @@ const IndexPage = () => {
       });
       const data = await res.json();
       setArray(data);
-
-      setResponse("上传已完成");
 
       setTimeout(() => {
         setResponse("");
