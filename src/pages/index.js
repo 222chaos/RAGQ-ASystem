@@ -103,30 +103,6 @@ const IndexPage = () => {
 
   return (
     <div>
-      <Menu
-        mode="horizontal"
-        style={{ textAlign: "center" }}
-        selectedKeys={[selectedMenuItem]}
-        onClick={menuItemClickHandler}
-      >
-        <Menu.SubMenu key="freshman" icon={<SearchOutlined />} title="大一">
-          <Menu.Item key="freshiman1">课程1</Menu.Item>
-          <Menu.Item key="freshiman2">课程2</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.SubMenu key="sophomore" icon={<SearchOutlined />} title="大二">
-          <Menu.Item key="sophomore1">课程1</Menu.Item>
-          <Menu.Item key="sophomore2">课程2</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.SubMenu key="junior" icon={<SearchOutlined />} title="大三">
-          <Menu.Item key="junior1">计算机网络</Menu.Item>
-          <Menu.Item key="junior2">需求工程</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.SubMenu key="senior" icon={<SearchOutlined />} title="大四">
-          <Menu.Item key="senior1">课程1</Menu.Item>
-          <Menu.Item key="senior2">课程2</Menu.Item>
-        </Menu.SubMenu>
-      </Menu>
-
       <div style={{ marginLeft: "220px" }}>
         <br />
         <br />
