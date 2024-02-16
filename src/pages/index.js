@@ -11,7 +11,6 @@ const IndexPage = () => {
   const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
 
   const handleContentSubmit = async () => {
     try {
@@ -71,33 +70,6 @@ const IndexPage = () => {
     } catch (error) {
       console.log(error);
       console.error("内容上传请求出错:", error);
-    }
-  };
-
-  const menuItemClickHandler = async (item) => {
-    setSelectedMenuItem(item.key);
-
-    try {
-      if (filePath) {
-        setUploading(true);
-        const response = await fetch(filePath);
-        const contentBuffer = await response.arrayBuffer();
-        const content = utf8Decoder.decode(contentBuffer);
-        setText(content);
-        const aiRes = await fetch("/api/ai", {
-          method: "POST",
-          body: JSON.stringify({ content: text }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const aiData = await aiRes.json();
-        setArray(aiData);
-      }
-    } catch (error) {
-      console.error("读取文件或调用api/ai出错:", error);
-    } finally {
-      setUploading(false);
     }
   };
 
