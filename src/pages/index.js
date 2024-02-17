@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
+const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
 
 const IndexPage = () => {
@@ -11,6 +12,7 @@ const IndexPage = () => {
   const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
 
   const handleContentSubmit = async () => {
     try {
@@ -24,6 +26,8 @@ const IndexPage = () => {
       });
       const data = await res.json();
       setArray(data);
+
+      setResponse("上传已完成");
 
       setTimeout(() => {
         setResponse("");
@@ -73,9 +77,79 @@ const IndexPage = () => {
     }
   };
 
+  const menuItemClickHandler = async (item) => {
+    setSelectedMenuItem(item.key);
+
+    try {
+      if (filePath) {
+        setUploading(true);
+        const response = await fetch(filePath);
+        const contentBuffer = await response.arrayBuffer();
+        const content = utf8Decoder.decode(contentBuffer);
+        setText(content);
+        const aiRes = await fetch("/api/ai", {
+          method: "POST",
+          body: JSON.stringify({ content: text }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const aiData = await aiRes.json();
+        setArray(aiData);
+      }
+    } catch (error) {
+      console.error("读取文件或调用api/ai出错:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div>
+      <Menu
+        mode="horizontal"
+        style={{ textAlign: "center" }}
+        selectedKeys={[selectedMenuItem]}
+        onClick={menuItemClickHandler}
+      >
+        <Menu.SubMenu key="freshman" icon={<SearchOutlined />} title="大一">
+          <Menu.Item key="freshiman1">课程1</Menu.Item>
+          <Menu.Item key="freshiman2">课程2</Menu.Item>
+        </Menu.SubMenu>
+        <Menu.SubMenu key="sophomore" icon={<SearchOutlined />} title="大二">
+          <Menu.Item key="sophomore1">课程1</Menu.Item>
+          <Menu.Item key="sophomore2">课程2</Menu.Item>
+        </Menu.SubMenu>
+        <Menu.SubMenu key="junior" icon={<SearchOutlined />} title="大三">
+          <Menu.Item key="junior1">计算机网络</Menu.Item>
+          <Menu.Item key="junior2">需求工程</Menu.Item>
+        </Menu.SubMenu>
+        <Menu.SubMenu key="senior" icon={<SearchOutlined />} title="大四">
+          <Menu.Item key="senior1">课程1</Menu.Item>
+          <Menu.Item key="senior2">课程2</Menu.Item>
+        </Menu.SubMenu>
+      </Menu>
+
       <div style={{ marginLeft: "220px" }}>
+        <h1>帮你读</h1>
+        <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
+          <TextArea
+            showCount
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="请上传内容"
+            style={{ height: 120, resize: "none" }}
+          />
+          <br />
+          <br />
+          <Button
+            style={{ height: "50px", width: "300px" }}
+            onClick={handleContentSubmit}
+            type="primary"
+          >
+            上传
+          </Button>
+        </div>
         <br />
         <br />
         <div
@@ -97,7 +171,7 @@ const IndexPage = () => {
           <br />
           <br />
           <Button
-            style={{ height: "50px", width: "100px" }}
+            style={{ height: "50px", width: "300px" }}
             onClick={handleQuerySubmit}
             type="primary"
             disabled={uploading}
