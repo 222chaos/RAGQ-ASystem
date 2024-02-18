@@ -7,37 +7,12 @@ const utf8Decoder = new TextDecoder("utf-8");
 
 const IndexPage = () => {
   const [content, setContent] = useState("");
-  const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
-
-  const handleContentSubmit = async () => {
-    try {
-      setUploading(true);
-      const res = await fetch("/api/storage2", {
-        method: "POST",
-        body: JSON.stringify({ content }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      setArray(data);
-
-      setResponse("上传已完成");
-
-      setTimeout(() => {
-        setResponse("");
-      }, 2000);
-    } catch (error) {
-      console.error("内容上传请求出错:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
+  const [showBookCovers, setShowBookCovers] = useState(false); // 控制是否显示封面页面
 
   const handleQuerySubmit = async () => {
     setResponse("");
@@ -104,86 +79,87 @@ const IndexPage = () => {
     }
   };
 
+  const handleShowBookCovers = () => {
+    setShowBookCovers(true);
+  };
+
+  const handleHideBookCovers = () => {
+    setShowBookCovers(false);
+  };
+
   return (
     <div>
-      <Menu
-        mode="horizontal"
-        style={{ textAlign: "center" }}
-        selectedKeys={[selectedMenuItem]}
-        onClick={menuItemClickHandler}
-      >
-        <Menu.SubMenu key="freshman" icon={<SearchOutlined />} title="大一">
-          <Menu.Item key="freshiman1">课程1</Menu.Item>
-          <Menu.Item key="freshiman2">课程2</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.SubMenu key="sophomore" icon={<SearchOutlined />} title="大二">
-          <Menu.Item key="sophomore1">课程1</Menu.Item>
-          <Menu.Item key="sophomore2">课程2</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.SubMenu key="junior" icon={<SearchOutlined />} title="大三">
-          <Menu.Item key="junior1">计算机网络</Menu.Item>
-          <Menu.Item key="junior2">需求工程</Menu.Item>
-        </Menu.SubMenu>
-        <Menu.SubMenu key="senior" icon={<SearchOutlined />} title="大四">
-          <Menu.Item key="senior1">课程1</Menu.Item>
-          <Menu.Item key="senior2">课程2</Menu.Item>
-        </Menu.SubMenu>
-      </Menu>
-
-      <div style={{ marginLeft: "220px" }}>
-        <h1>帮你读</h1>
-        <div style={{ margin: "auto", width: "50%", textAlign: "center" }}>
-          <TextArea
-            showCount
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="请上传内容"
-            style={{ height: 120, resize: "none" }}
-          />
-          <br />
-          <br />
-          <Button
-            style={{ height: "50px", width: "300px" }}
-            onClick={handleContentSubmit}
-            type="primary"
-          >
-            上传
-          </Button>
-        </div>
-        <br />
-        <br />
-        <div
-          style={{
-            margin: "auto",
-            width: "50%",
-            textAlign: "center",
-            marginTop: "20px",
-          }}
-        >
-          <Input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="请输入查询内容"
-            style={{ width: "100%", height: "50px" }}
-            disabled={uploading}
-          />
-          <br />
-          <br />
-          <Button
-            style={{ height: "50px", width: "300px" }}
-            onClick={handleQuerySubmit}
-            type="primary"
-            disabled={uploading}
-          >
-            查询
-          </Button>
-        </div>
+      {showBookCovers ? ( // 如果showBookCovers为true，则渲染展示封面的组件
+        <BookCoverDisplay onHideBookCovers={handleHideBookCovers} />
+      ) : (
         <div>
-          <h2>结果：</h2>
-          <div>{response}</div>
+          <Menu
+            mode="horizontal"
+            style={{ textAlign: "center" }}
+            selectedKeys={[selectedMenuItem]}
+            onClick={menuItemClickHandler}
+          ></Menu>
+
+          <div style={{ marginLeft: "20px" }}>
+            <h1>帮你读</h1>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: "100%",
+                marginTop: "250px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Input
+                  type="text"
+                  size="large"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="请输入查询内容"
+                  style={{ width: "750px", height: "50px" }}
+                  disabled={uploading}
+                />
+                <Button
+                  style={{ height: "50px", width: "75px", marginLeft: "10px" }}
+                  onClick={handleQuerySubmit}
+                  type="primary"
+                  disabled={uploading}
+                >
+                  查询
+                </Button>
+              </div>
+            </div>
+            <div>
+              <h2>结果：</h2>
+              <div>{response}</div>
+            </div>
+            <Button onClick={handleShowBookCovers}>展示封面</Button>
+          </div>
         </div>
-      </div>
+      )}
+    </div>
+  );
+};
+
+const BookCoverDisplay = ({ onHideBookCovers }) => {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h2>书籍封面</h2>
+      <img
+        src="https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark" // 替换为你的书籍封面图片地址
+        alt="Book Cover"
+        style={{ maxWidth: "300px", maxHeight: "400px" }}
+      />
+      <br />
+      <Button onClick={onHideBookCovers}>返回</Button>
     </div>
   );
 };
