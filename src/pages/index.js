@@ -12,7 +12,7 @@ const IndexPage = () => {
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
-  const [showBookCovers, setShowBookCovers] = useState(false); // 控制是否显示封面页面
+  const [showBookCovers, setShowBookCovers] = useState(false);
 
   const handleQuerySubmit = async () => {
     setResponse("");
@@ -89,7 +89,7 @@ const IndexPage = () => {
 
   return (
     <div>
-      {showBookCovers ? ( // 如果showBookCovers为true，则渲染展示封面的组件
+      {showBookCovers ? (
         <BookCoverDisplay onHideBookCovers={handleHideBookCovers} />
       ) : (
         <div>
@@ -154,7 +154,7 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
     <div style={{ textAlign: "center" }}>
       <h2>书籍封面</h2>
       <img
-        src="https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark" // 替换为你的书籍封面图片地址
+        src="https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark"
         alt="Book Cover"
         style={{ maxWidth: "300px", maxHeight: "400px" }}
       />
