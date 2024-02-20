@@ -150,16 +150,71 @@ const IndexPage = () => {
 };
 
 const BookCoverDisplay = ({ onHideBookCovers }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const images = [
+    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    "https://pic1.zhimg.com/v2-a227c45065523502ec2f6da493e948e4_r.jpg?source=1940ef5c",
+    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
+    "https://pic1.zhimg.com/v2-a227c45065523502ec2f6da493e948e4_r.jpg?source=1940ef5c",
+    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    // 添加更多图片链接
+  ];
+
+  const handlePrevious = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
   return (
     <div style={{ textAlign: "center" }}>
       <h2>书籍封面</h2>
-      <img
-        src="https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark"
-        alt="Book Cover"
-        style={{ maxWidth: "300px", maxHeight: "400px" }}
-      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          overflowX: "hidden",
+        }}
+      >
+        {images.map((image, index) => (
+          <img
+            key={index}
+            src={image}
+            alt={`Book Cover ${index}`}
+            style={{
+              maxWidth: currentImageIndex === index ? "500px" : "200px",
+              maxHeight: currentImageIndex === index ? "600px" : "300px",
+              marginLeft: index === 0 ? "0" : "20px",
+              transition: "all 0.5s ease",
+              transform:
+                currentImageIndex === index
+                  ? "translateX(0%)"
+                  : index < currentImageIndex
+                  ? "translateX(-100%)"
+                  : "translateX(100%)",
+              opacity: index === currentImageIndex ? 1 : 0.5,
+            }}
+          />
+        ))}
+      </div>
       <br />
-      <Button onClick={onHideBookCovers}>返回</Button>
+      <div>
+        <button style={{ float: "left" }} onClick={handlePrevious}>
+          上一个
+        </button>
+        <button style={{ float: "right" }} onClick={handleNext}>
+          下一个
+        </button>
+      </div>
+      <br />
+      <button onClick={onHideBookCovers}>返回</button>
     </div>
   );
 };
