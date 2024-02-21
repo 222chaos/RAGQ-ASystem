@@ -158,7 +158,6 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
     "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
     "https://pic1.zhimg.com/v2-a227c45065523502ec2f6da493e948e4_r.jpg?source=1940ef5c",
     "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
-    // 添加更多图片链接
   ];
 
   const handlePrevious = () => {
