@@ -154,9 +154,9 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
 
   const images = [
     "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
-    "https://pic1.zhimg.com/v2-a227c45065523502ec2f6da493e948e4_r.jpg?source=1940ef5c",
     "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://pic1.zhimg.com/v2-a227c45065523502ec2f6da493e948e4_r.jpg?source=1940ef5c",
+    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
+    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
     "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
   ];
 
@@ -173,47 +173,92 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
   };
 
   return (
-    <div style={{ textAlign: "center" }}>
-      <h2>书籍封面</h2>
+    <div
+      style={{
+        textAlign: "center",
+        backgroundColor: "black",
+        padding: "20px",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+    >
+      <h2 style={{ color: "white" }}>书籍封面</h2>
       <div
         style={{
           display: "flex",
           justifyContent: "center",
           overflowX: "hidden",
+          alignItems: "center",
+          height: "calc(100% - 160px)", // Adjust this value as needed
         }}
       >
-        {images.map((image, index) => (
-          <img
-            key={index}
-            src={image}
-            alt={`Book Cover ${index}`}
-            style={{
-              maxWidth: currentImageIndex === index ? "500px" : "200px",
-              maxHeight: currentImageIndex === index ? "600px" : "300px",
-              marginLeft: index === 0 ? "0" : "20px",
-              transition: "all 0.5s ease",
-              transform:
-                currentImageIndex === index
-                  ? "translateX(0%)"
-                  : index < currentImageIndex
-                  ? "translateX(-100%)"
-                  : "translateX(100%)",
-              opacity: index === currentImageIndex ? 1 : 0.5,
-            }}
-          />
-        ))}
+        {[images[images.length - 1], ...images, images[0]].map(
+          (image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Book Cover ${index}`}
+              style={{
+                maxWidth: currentImageIndex + 1 === index ? "500px" : "200px",
+                maxHeight: currentImageIndex + 1 === index ? "600px" : "300px",
+                marginLeft: "20px",
+                transition: "all 0.5s ease",
+                transform:
+                  currentImageIndex + 1 === index
+                    ? "translateX(0%)"
+                    : index < currentImageIndex + 1
+                    ? "translateX(-100%)"
+                    : "translateX(100%)",
+                opacity: currentImageIndex + 1 === index ? 1 : 0.5,
+              }}
+            />
+          )
+        )}
       </div>
       <br />
       <div>
-        <button style={{ float: "left" }} onClick={handlePrevious}>
+        <button
+          style={{
+            float: "left",
+            backgroundColor: "white",
+            color: "black",
+            borderRadius: "5px",
+            padding: "5px 10px",
+            margin: "5px",
+          }}
+          onClick={handlePrevious}
+        >
           上一个
         </button>
-        <button style={{ float: "right" }} onClick={handleNext}>
+        <button
+          style={{
+            float: "right",
+            backgroundColor: "white",
+            color: "black",
+            borderRadius: "5px",
+            padding: "5px 10px",
+            margin: "5px",
+          }}
+          onClick={handleNext}
+        >
           下一个
         </button>
       </div>
       <br />
-      <button onClick={onHideBookCovers}>返回</button>
+      <button
+        style={{
+          backgroundColor: "white",
+          color: "black",
+          borderRadius: "5px",
+          padding: "5px 10px",
+          marginTop: "20px",
+        }}
+        onClick={onHideBookCovers}
+      >
+        返回
+      </button>
     </div>
   );
 };
