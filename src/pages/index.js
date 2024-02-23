@@ -194,28 +194,33 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
           height: "calc(100% - 160px)", // Adjust this value as needed
         }}
       >
-        {[images[images.length - 1], ...images, images[0]].map(
-          (image, index) => (
+        {[...images, ...images, ...images].map((image, index) => {
+          let adjustedIndex = index - currentImageIndex;
+          if (adjustedIndex < 0) adjustedIndex += images.length;
+          if (adjustedIndex >= images.length) adjustedIndex -= images.length;
+          return (
             <img
               key={index}
               src={image}
               alt={`Book Cover ${index}`}
               style={{
-                maxWidth: currentImageIndex + 1 === index ? "500px" : "200px",
-                maxHeight: currentImageIndex + 1 === index ? "600px" : "300px",
+                maxWidth:
+                  adjustedIndex === Math.floor(images.length / 2)
+                    ? "600px"
+                    : "200px", // Adjusted size for the middle image
+                maxHeight:
+                  adjustedIndex === Math.floor(images.length / 2)
+                    ? "700px"
+                    : "300px", // Adjusted size for the middle image
                 marginLeft: "20px",
                 transition: "all 0.5s ease",
-                transform:
-                  currentImageIndex + 1 === index
-                    ? "translateX(0%)"
-                    : index < currentImageIndex + 1
-                    ? "translateX(-100%)"
-                    : "translateX(100%)",
-                opacity: currentImageIndex + 1 === index ? 1 : 0.5,
+                transform: `translateX(${-currentImageIndex * 220}px)`, // Adjusted translateX value to center the enlarged image
+                opacity:
+                  adjustedIndex === Math.floor(images.length / 2) ? 1 : 0.5,
               }}
             />
-          )
-        )}
+          );
+        })}
       </div>
       <br />
       <div>
