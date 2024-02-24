@@ -153,11 +153,8 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const images = [
-    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
-    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    "https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg",
+    "https://static.file123.info:8443/covers/s/9787040417142.jpg",
   ];
 
   const handlePrevious = () => {
@@ -188,35 +185,24 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "space-around",
           overflowX: "hidden",
           alignItems: "center",
           height: "calc(100% - 160px)",
         }}
       >
-        {[...images, ...images, ...images].map((image, index) => {
-          let adjustedIndex = index - currentImageIndex;
-          if (adjustedIndex < 0) adjustedIndex += images.length;
-          if (adjustedIndex >= images.length) adjustedIndex -= images.length;
+        {[...Array(5)].map((_, index) => {
+          const imgIndex =
+            (currentImageIndex + index - 2 + images.length) % images.length;
           return (
             <img
               key={index}
-              src={image}
-              alt={`Book Cover ${index}`}
+              src={images[imgIndex]}
+              alt={`Book Cover ${imgIndex}`}
               style={{
-                maxWidth:
-                  adjustedIndex === Math.floor(images.length / 2)
-                    ? "600px"
-                    : "200px",
-                maxHeight:
-                  adjustedIndex === Math.floor(images.length / 2)
-                    ? "700px"
-                    : "300px",
-                marginLeft: "20px",
-                transition: "all 0.5s ease",
-                transform: `translateX(${-currentImageIndex * 220}px)`,
-                opacity:
-                  adjustedIndex === Math.floor(images.length / 2) ? 1 : 0.5,
+                maxWidth: index === 2 ? "500px" : "200px",
+                maxHeight: index === 2 ? "600px" : "300px",
+                opacity: index === 2 ? 1 : 0.5,
               }}
             />
           );
