@@ -191,7 +191,7 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
           justifyContent: "center",
           overflowX: "hidden",
           alignItems: "center",
-          height: "calc(100% - 160px)", // Adjust this value as needed
+          height: "calc(100% - 160px)",
         }}
       >
         {[...images, ...images, ...images].map((image, index) => {
@@ -207,14 +207,14 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
                 maxWidth:
                   adjustedIndex === Math.floor(images.length / 2)
                     ? "600px"
-                    : "200px", // Adjusted size for the middle image
+                    : "200px",
                 maxHeight:
                   adjustedIndex === Math.floor(images.length / 2)
                     ? "700px"
-                    : "300px", // Adjusted size for the middle image
+                    : "300px",
                 marginLeft: "20px",
                 transition: "all 0.5s ease",
-                transform: `translateX(${-currentImageIndex * 220}px)`, // Adjusted translateX value to center the enlarged image
+                transform: `translateX(${-currentImageIndex * 220}px)`,
                 opacity:
                   adjustedIndex === Math.floor(images.length / 2) ? 1 : 0.5,
               }}
