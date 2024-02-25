@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input } from "antd";
+import { Button, Input, Carousel } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
@@ -63,7 +63,23 @@ const IndexPage = () => {
   return (
     <div>
       {showBookCovers ? (
-        <BookCoverDisplay onHideBookCovers={handleHideBookCovers} />
+        <div>
+          <Carousel afterChange={(currentSlide) => console.log(currentSlide)}>
+            <div>
+              <h3 style={contentStyle}>1</h3>
+            </div>
+            <div>
+              <h3 style={contentStyle}>2</h3>
+            </div>
+            <div>
+              <h3 style={contentStyle}>3</h3>
+            </div>
+            <div>
+              <h3 style={contentStyle}>4</h3>
+            </div>
+          </Carousel>
+          <Button onClick={handleHideBookCovers}>返回</Button>
+        </div>
       ) : (
         <div>
           <div style={{ marginLeft: "20px" }}>
@@ -115,109 +131,13 @@ const IndexPage = () => {
   );
 };
 
-const BookCoverDisplay = ({ onHideBookCovers }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const images = [
-    "https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg",
-    "https://static.file123.info:8443/covers/s/9787040417142.jpg",
-  ];
-
-  const handlePrevious = () => {
-    setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
-    );
-  };
-
-  const handleNext = () => {
-    setCurrentImageIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  return (
-    <div
-      style={{
-        textAlign: "center",
-        backgroundColor: "black",
-        padding: "20px",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}
-    >
-      <h2 style={{ color: "white" }}>书籍封面</h2>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          overflowX: "hidden",
-          alignItems: "center",
-          height: "calc(100% - 160px)",
-        }}
-      >
-        {[...Array(5)].map((_, index) => {
-          const imgIndex =
-            (currentImageIndex + index - 2 + images.length) % images.length;
-          return (
-            <img
-              key={index}
-              src={images[imgIndex]}
-              alt={`Book Cover ${imgIndex}`}
-              style={{
-                maxWidth: index === 2 ? "500px" : "200px",
-                maxHeight: index === 2 ? "600px" : "300px",
-                opacity: index === 2 ? 1 : 0.5,
-              }}
-            />
-          );
-        })}
-      </div>
-      <br />
-      <div>
-        <button
-          style={{
-            float: "left",
-            backgroundColor: "white",
-            color: "black",
-            borderRadius: "5px",
-            padding: "5px 10px",
-            margin: "5px",
-          }}
-          onClick={handlePrevious}
-        >
-          上一个
-        </button>
-        <button
-          style={{
-            float: "right",
-            backgroundColor: "white",
-            color: "black",
-            borderRadius: "5px",
-            padding: "5px 10px",
-            margin: "5px",
-          }}
-          onClick={handleNext}
-        >
-          下一个
-        </button>
-      </div>
-      <br />
-      <button
-        style={{
-          backgroundColor: "white",
-          color: "black",
-          borderRadius: "5px",
-          padding: "5px 10px",
-          marginTop: "20px",
-        }}
-        onClick={onHideBookCovers}
-      >
-        返回
-      </button>
-    </div>
-  );
+const contentStyle = {
+  margin: 0,
+  height: "160px",
+  color: "#fff",
+  lineHeight: "160px",
+  textAlign: "center",
+  background: "#364d79",
 };
 
 export default IndexPage;
