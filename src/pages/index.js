@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, Menu } from "antd";
+import { Button, Input } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
@@ -11,7 +11,7 @@ const IndexPage = () => {
   const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
+
   const [showBookCovers, setShowBookCovers] = useState(false);
 
   const handleQuerySubmit = async () => {
@@ -52,33 +52,6 @@ const IndexPage = () => {
     }
   };
 
-  const menuItemClickHandler = async (item) => {
-    setSelectedMenuItem(item.key);
-
-    try {
-      if (filePath) {
-        setUploading(true);
-        const response = await fetch(filePath);
-        const contentBuffer = await response.arrayBuffer();
-        const content = utf8Decoder.decode(contentBuffer);
-        setText(content);
-        const aiRes = await fetch("/api/ai", {
-          method: "POST",
-          body: JSON.stringify({ content: text }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const aiData = await aiRes.json();
-        setArray(aiData);
-      }
-    } catch (error) {
-      console.error("读取文件或调用api/ai出错:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleShowBookCovers = () => {
     setShowBookCovers(true);
   };
@@ -93,13 +66,6 @@ const IndexPage = () => {
         <BookCoverDisplay onHideBookCovers={handleHideBookCovers} />
       ) : (
         <div>
-          <Menu
-            mode="horizontal"
-            style={{ textAlign: "center" }}
-            selectedKeys={[selectedMenuItem]}
-            onClick={menuItemClickHandler}
-          ></Menu>
-
           <div style={{ marginLeft: "20px" }}>
             <h1>帮你读</h1>
             <div
