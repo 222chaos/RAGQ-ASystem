@@ -59,17 +59,30 @@ const IndexPage = () => {
   const handleHideBookCovers = () => {
     setShowBookCovers(false);
   };
-
+  const images = [
+    "https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg",
+    "https://static.file123.info:8443/covers/s/9787040417142.jpg",
+  ];
   return (
     <div>
       {showBookCovers ? (
         <div>
           <Carousel afterChange={(currentSlide) => console.log(currentSlide)}>
             <div>
-              <h3 style={contentStyle}>1</h3>
+              <h3 style={contentStyle}>
+                <img
+                  src="https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg"
+                  style={imageStyle}
+                ></img>
+              </h3>
             </div>
             <div>
-              <h3 style={contentStyle}>2</h3>
+              <h3 style={contentStyle}>
+                <img
+                  src="https://static.file123.info:8443/covers/s/9787040417142.jpg"
+                  style={imageStyle}
+                ></img>
+              </h3>
             </div>
             <div>
               <h3 style={contentStyle}>3</h3>
@@ -78,6 +91,7 @@ const IndexPage = () => {
               <h3 style={contentStyle}>4</h3>
             </div>
           </Carousel>
+
           <Button onClick={handleHideBookCovers}>返回</Button>
         </div>
       ) : (
@@ -132,12 +146,17 @@ const IndexPage = () => {
 };
 
 const contentStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   margin: 0,
-  height: "160px",
+  height: "98vh",
   color: "#fff",
-  lineHeight: "160px",
   textAlign: "center",
   background: "#364d79",
 };
-
+const imageStyle = {
+  width: "50vh",
+  height: "auto",
+};
 export default IndexPage;
