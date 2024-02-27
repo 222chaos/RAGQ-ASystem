@@ -59,10 +59,7 @@ const IndexPage = () => {
   const handleHideBookCovers = () => {
     setShowBookCovers(false);
   };
-  const images = [
-    "https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg",
-    "https://static.file123.info:8443/covers/s/9787040417142.jpg",
-  ];
+
   return (
     <div>
       {showBookCovers ? (
@@ -71,6 +68,7 @@ const IndexPage = () => {
             <div>
               <h3 style={contentStyle}>
                 <img
+                  onClick={handleHideBookCovers}
                   src="https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg"
                   style={imageStyle}
                 ></img>
@@ -79,6 +77,7 @@ const IndexPage = () => {
             <div>
               <h3 style={contentStyle}>
                 <img
+                  onClick={handleHideBookCovers}
                   src="https://static.file123.info:8443/covers/s/9787040417142.jpg"
                   style={imageStyle}
                 ></img>
