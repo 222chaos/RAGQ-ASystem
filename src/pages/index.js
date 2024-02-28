@@ -64,7 +64,11 @@ const IndexPage = () => {
     <div>
       {showBookCovers ? (
         <div>
-          <Carousel afterChange={(currentSlide) => console.log(currentSlide)}>
+          <Carousel
+            speed={500}
+            autoplay
+            afterChange={(currentSlide) => console.log(currentSlide)}
+          >
             <div>
               <h3 style={contentStyle}>
                 <img
