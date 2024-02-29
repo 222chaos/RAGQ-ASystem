@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, Carousel } from "antd";
+import { Button, Input, Menu } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
@@ -11,7 +11,7 @@ const IndexPage = () => {
   const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
-
+  const [selectedMenuItem, setSelectedMenuItem] = useState("upload");
   const [showBookCovers, setShowBookCovers] = useState(false);
 
   const handleQuerySubmit = async () => {
@@ -52,6 +52,33 @@ const IndexPage = () => {
     }
   };
 
+  const menuItemClickHandler = async (item) => {
+    setSelectedMenuItem(item.key);
+
+    try {
+      if (filePath) {
+        setUploading(true);
+        const response = await fetch(filePath);
+        const contentBuffer = await response.arrayBuffer();
+        const content = utf8Decoder.decode(contentBuffer);
+        setText(content);
+        const aiRes = await fetch("/api/ai", {
+          method: "POST",
+          body: JSON.stringify({ content: text }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const aiData = await aiRes.json();
+        setArray(aiData);
+      }
+    } catch (error) {
+      console.error("读取文件或调用api/ai出错:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleShowBookCovers = () => {
     setShowBookCovers(true);
   };
@@ -63,42 +90,16 @@ const IndexPage = () => {
   return (
     <div>
       {showBookCovers ? (
-        <div>
-          <Carousel
-            speed={500}
-            autoplay
-            afterChange={(currentSlide) => console.log(currentSlide)}
-          >
-            <div>
-              <h3 style={contentStyle}>
-                <img
-                  onClick={handleHideBookCovers}
-                  src="https://www.manongbook.com/d/file/other/19e88c4f255361cf57b1b8bea1ea11560.jpg"
-                  style={imageStyle}
-                ></img>
-              </h3>
-            </div>
-            <div>
-              <h3 style={contentStyle}>
-                <img
-                  onClick={handleHideBookCovers}
-                  src="https://static.file123.info:8443/covers/s/9787040417142.jpg"
-                  style={imageStyle}
-                ></img>
-              </h3>
-            </div>
-            <div>
-              <h3 style={contentStyle}>3</h3>
-            </div>
-            <div>
-              <h3 style={contentStyle}>4</h3>
-            </div>
-          </Carousel>
-
-          <Button onClick={handleHideBookCovers}>返回</Button>
-        </div>
+        <BookCoverDisplay onHideBookCovers={handleHideBookCovers} />
       ) : (
         <div>
+          <Menu
+            mode="horizontal"
+            style={{ textAlign: "center" }}
+            selectedKeys={[selectedMenuItem]}
+            onClick={menuItemClickHandler}
+          ></Menu>
+
           <div style={{ marginLeft: "20px" }}>
             <h1>帮你读</h1>
             <div
@@ -148,18 +149,101 @@ const IndexPage = () => {
   );
 };
 
-const contentStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  margin: 0,
-  height: "98vh",
-  color: "#fff",
-  textAlign: "center",
-  background: "#364d79",
-};
-const imageStyle = {
-  width: "50vh",
-  height: "auto",
+const BookCoverDisplay = ({ onHideBookCovers }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const images = [
+    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
+    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
+    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
+    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+  ];
+
+  const totalImages = images.length;
+
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex - 1 + totalImages) % totalImages
+    );
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % totalImages);
+  };
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h2>书籍封面</h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          overflow: "hidden",
+          position: "relative",
+          width: "95%",
+          margin: "0 auto",
+        }}
+      >
+        <button
+          onClick={prevImage}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "10px",
+            transform: "translateY(-50%)",
+            zIndex: "1",
+          }}
+        >
+          {"<"}
+        </button>
+        <div
+          style={{
+            display: "flex",
+            transition: "transform 1s ease",
+            transform: `translateX(-${
+              currentImageIndex * (100 / totalImages)
+            }%)`,
+          }}
+        >
+          {images.map((imageUrl, index) => (
+            <img
+              key={index}
+              src={imageUrl}
+              alt={`Book Cover ${index + 1}`}
+              style={{ margin: "0 15px", width: "200px" }}
+            />
+          ))}
+        </div>
+        <button
+          onClick={nextImage}
+          style={{
+            position: "absolute",
+            top: "50%",
+            right: "10px",
+            transform: "translateY(-50%)",
+            zIndex: "1",
+          }}
+        >
+          {">"}
+        </button>
+      </div>
+      <br />
+      <button
+        style={{
+          backgroundColor: "white",
+          color: "black",
+          borderRadius: "5px",
+          padding: "5px 10px",
+          marginTop: "20px",
+        }}
+        onClick={onHideBookCovers}
+      >
+        返回
+      </button>
+    </div>
+  );
 };
 export default IndexPage;
