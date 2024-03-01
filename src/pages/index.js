@@ -153,13 +153,14 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const images = [
-    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
-    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
-    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
-    "https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/05/ChMkJ1bKyU2IG8KRAAT_NkosRHwAALIMALHqVcABP9O282.jpg",
-    "https://pic.vjshi.com/2019-12-31/07c5372ebaf9b4621f7641ccb99bec9b/00001.jpg?x-oss-process=style/watermark",
+    "https://blognumbers.files.wordpress.com/2010/09/1.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/2.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/3.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/4.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/5.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/6.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/7.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/9.jpg",
   ];
 
   const totalImages = images.length;
