@@ -151,7 +151,6 @@ const IndexPage = () => {
 
 const BookCoverDisplay = ({ onHideBookCovers }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
   const images = [
     "https://blognumbers.files.wordpress.com/2010/09/1.jpg",
     "https://blognumbers.files.wordpress.com/2010/09/2.jpg",
@@ -173,6 +172,23 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % totalImages);
+  };
+
+  const renderImages = () => {
+    const visibleImages = [];
+    for (let i = 0; i < 7; i++) {
+      const index = (currentImageIndex + i) % totalImages;
+      visibleImages.push(
+        <div key={index} style={{ margin: "0 15px", width: "200px" }}>
+          <img
+            src={images[index]}
+            alt={`Book Cover ${index + 1}`}
+            style={{ width: "100%" }}
+          />
+        </div>
+      );
+    }
+    return visibleImages;
   };
 
   return (
@@ -204,19 +220,10 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
           style={{
             display: "flex",
             transition: "transform 1s ease",
-            transform: `translateX(-${
-              currentImageIndex * (100 / totalImages)
-            }%)`,
+            transform: `translateX(-${currentImageIndex * 230}px)`, // Adjusted for image width and margin
           }}
         >
-          {images.map((imageUrl, index) => (
-            <img
-              key={index}
-              src={imageUrl}
-              alt={`Book Cover ${index + 1}`}
-              style={{ margin: "0 15px", width: "200px" }}
-            />
-          ))}
+          {renderImages()}
         </div>
         <button
           onClick={nextImage}
