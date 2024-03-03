@@ -220,7 +220,7 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
           style={{
             display: "flex",
             transition: "transform 1s ease",
-            transform: `translateX(-${currentImageIndex * 230}px)`, // Adjusted for image width and margin
+            transform: `translateX(-${currentImageIndex * 230}px)`,
           }}
         >
           {renderImages()}
