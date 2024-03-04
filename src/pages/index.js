@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
 
+import SimpleSlider from "./Carousel";
 const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
 
@@ -149,8 +149,7 @@ const IndexPage = () => {
   );
 };
 
-const BookCoverDisplay = ({ onHideBookCovers }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+const BookCoverDisplay = () => {
   const images = [
     "https://blognumbers.files.wordpress.com/2010/09/1.jpg",
     "https://blognumbers.files.wordpress.com/2010/09/2.jpg",
@@ -162,95 +161,11 @@ const BookCoverDisplay = ({ onHideBookCovers }) => {
     "https://blognumbers.files.wordpress.com/2010/09/9.jpg",
   ];
 
-  const totalImages = images.length;
-
-  const prevImage = () => {
-    setCurrentImageIndex(
-      (prevIndex) => (prevIndex - 1 + totalImages) % totalImages
-    );
-  };
-
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % totalImages);
-  };
-
-  const renderImages = () => {
-    const visibleImages = [];
-    for (let i = 0; i < 7; i++) {
-      const index = (currentImageIndex + i) % totalImages;
-      visibleImages.push(
-        <div key={index} style={{ margin: "0 15px", width: "200px" }}>
-          <img
-            src={images[index]}
-            alt={`Book Cover ${index + 1}`}
-            style={{ width: "100%" }}
-          />
-        </div>
-      );
-    }
-    return visibleImages;
-  };
-
   return (
-    <div style={{ textAlign: "center" }}>
+    <div>
       <h2>书籍封面</h2>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          overflow: "hidden",
-          position: "relative",
-          width: "95%",
-          margin: "0 auto",
-        }}
-      >
-        <button
-          onClick={prevImage}
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "10px",
-            transform: "translateY(-50%)",
-            zIndex: "1",
-          }}
-        >
-          {"<"}
-        </button>
-        <div
-          style={{
-            display: "flex",
-            transition: "transform 1s ease",
-            transform: `translateX(-${currentImageIndex * 230}px)`,
-          }}
-        >
-          {renderImages()}
-        </div>
-        <button
-          onClick={nextImage}
-          style={{
-            position: "absolute",
-            top: "50%",
-            right: "10px",
-            transform: "translateY(-50%)",
-            zIndex: "1",
-          }}
-        >
-          {">"}
-        </button>
-      </div>
-      <br />
-      <button
-        style={{
-          backgroundColor: "white",
-          color: "black",
-          borderRadius: "5px",
-          padding: "5px 10px",
-          marginTop: "20px",
-        }}
-        onClick={onHideBookCovers}
-      >
-        返回
-      </button>
+
+      <SimpleSlider />
     </div>
   );
 };
