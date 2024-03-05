@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
 
-import SimpleSlider from "./Carousel";
+import CenterMode from "./Carousel";
 const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
 
@@ -93,22 +93,18 @@ const IndexPage = () => {
         <BookCoverDisplay onHideBookCovers={handleHideBookCovers} />
       ) : (
         <div>
-          <Menu
-            mode="horizontal"
-            style={{ textAlign: "center" }}
-            selectedKeys={[selectedMenuItem]}
-            onClick={menuItemClickHandler}
-          ></Menu>
-
           <div style={{ marginLeft: "20px" }}>
             <h1>帮你读</h1>
+            <>
+              <CenterMode />
+            </>
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 width: "100%",
-                marginTop: "250px",
+                marginTop: "100px",
               }}
             >
               <div
@@ -141,7 +137,6 @@ const IndexPage = () => {
               <h2>结果：</h2>
               <div>{response}</div>
             </div>
-            <Button onClick={handleShowBookCovers}>展示封面</Button>
           </div>
         </div>
       )}
@@ -149,24 +144,4 @@ const IndexPage = () => {
   );
 };
 
-const BookCoverDisplay = () => {
-  const images = [
-    "https://blognumbers.files.wordpress.com/2010/09/1.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/2.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/3.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/4.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/5.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/6.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/7.jpg",
-    "https://blognumbers.files.wordpress.com/2010/09/9.jpg",
-  ];
-
-  return (
-    <div>
-      <h2>书籍封面</h2>
-
-      <SimpleSlider />
-    </div>
-  );
-};
 export default IndexPage;

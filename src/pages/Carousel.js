@@ -3,30 +3,51 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-function SimpleSlider() {
+function CenterMode() {
   const settings = {
-    dots: true,
-    arrows: true,
+    className: "center",
+    centerMode: true,
     infinite: true,
+    centerPadding: "60px",
+    slidesToShow: 3,
     speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 1,
+    dots: true,
   };
 
+  const imageUrls = [
+    "https://blognumbers.files.wordpress.com/2010/09/1.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/2.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/3.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/4.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/5.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/6.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/7.jpg",
+    "https://blognumbers.files.wordpress.com/2010/09/9.jpg",
+  ];
+
   return (
-    <Slider {...settings}>
-      <div>
-        <h3>Slide 1</h3>
-      </div>
-      <div>
-        <h3>Slide 2</h3>
-      </div>
-      <div>
-        <h3>Slide 3</h3>
-      </div>
-      {/* Add more slides here */}
-    </Slider>
+    <div
+      className="slider-container"
+      style={{ width: "60%", margin: "0 auto", background: "#ffffff" }}
+    >
+      <Slider {...settings}>
+        {imageUrls.map((url, index) => (
+          <div key={index} style={{ textAlign: "center" }}>
+            <img
+              src={url}
+              alt={`Image ${index + 1}`}
+              style={{
+                display: "block",
+                margin: "auto",
+                maxWidth: "30%",
+                maxHeight: "30%",
+              }}
+            />
+          </div>
+        ))}
+      </Slider>
+    </div>
   );
 }
 
-export default SimpleSlider;
+export default CenterMode;
