@@ -19,10 +19,6 @@
   transition: transform 0.3s;
 }
 
-.slick-slide:not(.slick-center) {
-  transform: scale(0.8);
-}
-
 .slick-slide.slick-center {
   transform: scale(1);
   z-index: 1;

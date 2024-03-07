@@ -2,11 +2,11 @@ import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import styles from "./CenterMode.module.css"; // 导入 CSS 模块化样式
+import styles from "./CenterMode.module.css";
 
 function CenterMode() {
   const settings = {
-    className: styles.center, // 使用 CSS 模块化的类名
+    className: styles.center,
     centerMode: true,
     infinite: true,
     centerPadding: "10px",
@@ -23,15 +23,13 @@ function CenterMode() {
 
   return (
     <div className={styles.sliderContainer}>
-      {" "}
-      {/* 使用 CSS 模块化的类名 */}
       <Slider {...settings}>
         {imageUrls.map((url, index) => (
           <div key={index} className="slick-slide-container">
             <img
               src={url}
               alt={`Image ${index + 1}`}
-              className={`slick-slide-image ${styles.center}`} // 使用 CSS 模块化的类名
+              className={`slick-slide-image ${styles.center}`}
             />
           </div>
         ))}
