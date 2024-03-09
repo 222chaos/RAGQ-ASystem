@@ -1,13 +1,26 @@
-.slick-slide-container {
-  transition: all ease-in-out 0.3s;
+.container {
+  width: 70%;
+  margin: 0 auto;
+  background: #cccec2;
 }
 
-.center {
-  display: flex;
-  justify-content: center;
-  transition: all ease-in-out 0.3s;
+.slider-item {
+  transition: transform 0.5s ease;
 }
 
-.center:hover {
-  transform: scale(1);
+.slider-item:hover,
+.slider-item.center {
+  transform: scale(1.2);
+}
+
+.slider-item img {
+  padding: 10%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: auto;
+  text-align: center;
+}
+.selected {
+  transform: scale(1.2);
 }
