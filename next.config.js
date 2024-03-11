@@ -8,7 +8,4 @@ const nextConfig = {
   ],
 };
 
-console.log("success");
-console.log("Next.js configuration applied:", nextConfig);
-
 module.exports = nextConfig;

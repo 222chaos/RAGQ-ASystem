@@ -52,55 +52,18 @@ const IndexPage = () => {
 
   return (
     <div>
-      <div>
-        <div style={{ marginLeft: "20px" }}>
-          <h1>帮你读</h1>
-          <>
-            <CenterMode />
-          </>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              width: "100%",
-              marginTop: "100px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Input
-                type="text"
-                size="large"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="请输入查询内容"
-                style={{ width: "750px", height: "50px" }}
-                disabled={uploading}
-              />
-              <Button
-                style={{ height: "50px", width: "75px", marginLeft: "10px" }}
-                onClick={handleQuerySubmit}
-                type="primary"
-                disabled={uploading}
-              >
-                查询
-              </Button>
-            </div>
-          </div>
-          <div>
-            <h2>结果：</h2>
-            <div>{response}</div>
-          </div>
-        </div>
+      <h1 style={{ marginLeft: "20px", position: "absolute" }}>帮你读</h1>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CenterMode />
       </div>
     </div>
   );
 };
-
 export default IndexPage;
