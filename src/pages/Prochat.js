@@ -1,18 +1,35 @@
-"use client";
 import { useState, useEffect } from "react";
 import { ProChat } from "@ant-design/pro-chat";
+import { Button } from "antd";
 import { useTheme } from "antd-style";
 import React from "react";
-export default function Home() {
+export default function Prochat({ setClicked }) {
   const theme = useTheme();
   const [showComponent, setShowComponent] = useState(false);
   useEffect(() => setShowComponent(true), []);
+  const handleReturn = () => {
+    setClicked(false);
+  };
   return (
     <div
       style={{
         backgroundColor: theme.colorBgLayout,
       }}
     >
+      <div
+        style={{ position: "fixed", top: "20px", right: "20px", zIndex: 999 }}
+      >
+        <Button
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+          }}
+          onClick={handleReturn}
+        >
+          返回
+        </Button>
+      </div>
       {showComponent && (
         <ProChat
           style={{

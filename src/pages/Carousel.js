@@ -4,7 +4,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import styles from "./CenterMode.module.css";
 
-function CenterMode() {
+function CenterMode({ setClicked }) {
   const sliderRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
@@ -30,6 +30,8 @@ function CenterMode() {
     } else {
       setSelectedImageIndex(index);
       sliderRef.current.slickGoTo(index - 1);
+      setClicked(true);
+      console.log("index===", index);
     }
   };
 
@@ -37,14 +39,15 @@ function CenterMode() {
     <div className={styles.container}>
       <Slider ref={sliderRef} {...settings}>
         {imageUrls.map((url, index) => (
-          <div
-            key={index}
-            className={`${styles["slider-item"]} ${
-              selectedImageIndex === index ? styles.selected : ""
-            }`}
-            onClick={() => handleClick(index)}
-          >
-            <img src={url} alt={`Image ${index + 1}`} />
+          <div key={index} className={styles["slider-item"]}>
+            <img
+              src={url}
+              alt={`Image ${index + 1}`}
+              className={`${
+                selectedImageIndex === index ? styles.selected : ""
+              }`}
+              onClick={() => handleClick(index)}
+            />
           </div>
         ))}
       </Slider>

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Button, Input, Menu } from "antd";
 
 import CenterMode from "./Carousel";
+import Prochat from "./Prochat";
+
 const { TextArea } = Input;
 const utf8Decoder = new TextDecoder("utf-8");
 
@@ -11,6 +13,7 @@ const IndexPage = () => {
   const [response, setResponse] = useState("......");
   const [array, setArray] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [clicked, setClicked] = useState(false);
 
   const handleQuerySubmit = async () => {
     setResponse("");
@@ -52,17 +55,25 @@ const IndexPage = () => {
 
   return (
     <div>
-      <h1 style={{ marginLeft: "20px", position: "absolute" }}>帮你读</h1>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CenterMode />
-      </div>
+      {clicked ? (
+        <div></div>
+      ) : (
+        <h1 style={{ marginLeft: "20px", position: "absolute" }}>帮你读</h1>
+      )}
+      {clicked ? (
+        <Prochat setClicked={setClicked} />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CenterMode setClicked={setClicked} />
+        </div>
+      )}
     </div>
   );
 };
