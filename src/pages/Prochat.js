@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ProChat } from "@ant-design/pro-chat";
 import { Button } from "antd";
 import { useTheme } from "antd-style";
+import { LeftOutlined } from "@ant-design/icons";
 import React from "react";
 export default function Prochat({ setClicked }) {
   const theme = useTheme();
@@ -16,20 +17,19 @@ export default function Prochat({ setClicked }) {
         backgroundColor: theme.colorBgLayout,
       }}
     >
-      <div
-        style={{ position: "fixed", top: "20px", right: "20px", zIndex: 999 }}
-      >
+      <div style={{ position: "fixed", top: "8px", left: "8px", zIndex: 999 }}>
         <Button
           style={{
             position: "absolute",
-            top: "20px",
-            right: "20px",
+            top: "8px",
+            left: "8px",
           }}
           onClick={handleReturn}
         >
-          返回
+          <LeftOutlined />
         </Button>
       </div>
+
       {showComponent && (
         <ProChat
           style={{
@@ -37,7 +37,7 @@ export default function Prochat({ setClicked }) {
             width: "100vw",
           }}
           helloMessage={
-            "欢迎使用 ProChat ，我是你的专属机器人，这是我们的 Github：[ProChat](https://github.com/ant-design/pro-chat)"
+            "欢迎使用 帮你读 ，我是你的专属机器人，你将要查询的科目是{。。。}，请输入需要查询的内容。"
           }
           request={async (messages) => {
             const mockedData = `这是一段模拟的对话数据。本次会话传入了${messages.length}条消息`;
