@@ -47,6 +47,9 @@ dependencies:
   transformers:
     specifier: ^3.1.0
     version: 3.1.0
+  uuid:
+    specifier: ^9.0.1
+    version: 9.0.1
 
 devDependencies:
   '@babel/core':
@@ -126,7 +129,7 @@ packages:
       react: ^18
     dependencies:
       '@ant-design/icons': 5.3.1(react-dom@18.2.0)(react@18.2.0)
-      '@ant-design/pro-editor': 1.0.0(@emotion/react@11.11.4)(@types/react@18.2.64)(antd-style@3.6.1)(antd@5.15.1)(react-dom@18.2.0)(react@18.2.0)
+      '@ant-design/pro-editor': 1.0.2(@emotion/react@11.11.4)(@types/react@18.2.64)(antd-style@3.6.1)(antd@5.15.1)(react-dom@18.2.0)(react@18.2.0)
       '@babel/runtime': 7.24.0
       '@emotion/react': 11.11.4(@types/react@18.2.64)(react@18.2.0)
       '@testing-library/jest-dom': 6.4.2
@@ -159,8 +162,8 @@ packages:
       - vitest
     dev: false
 
-  /@ant-design/pro-editor@1.0.0(@emotion/react@11.11.4)(@types/react@18.2.64)(antd-style@3.6.1)(antd@5.15.1)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-bmbIehqGWkKRRj/w7g0+2PGSoTNcFHDxV6nqN+OekyFXnCpUpFPu9Eai8EsVgPjvUT6E9Y9Lm2MunXk1SShDoQ==}
+  /@ant-design/pro-editor@1.0.2(@emotion/react@11.11.4)(@types/react@18.2.64)(antd-style@3.6.1)(antd@5.15.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-47zb/QpBWY9pn8j89s8CAf3EOvtGluKpyztwyePmd715WOHqG2Z9J1K4sqs7zE7G+i9ad18aNqldkwMuSXT5PA==}
     peerDependencies:
       antd: '>=5'
       antd-style: '>=3'
@@ -6336,6 +6339,11 @@ packages:
   /utils-merge@1.0.1:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
+    dev: false
+
+  /uuid@9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    hasBin: true
     dev: false
 
   /uvu@0.5.6:
