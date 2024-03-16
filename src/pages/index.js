@@ -29,7 +29,7 @@ const IndexPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({ requestData }),
       });
       const reader = queryRes.body.getReader();
 
