@@ -4,13 +4,18 @@ import { Button } from "antd";
 import { useTheme } from "antd-style";
 import { LeftOutlined } from "@ant-design/icons";
 import React from "react";
-export default function Prochat({ setClicked }) {
+
+export default function Prochat({ setClicked, selectedImageInfo }) {
+  console.log("imageInfo====", selectedImageInfo);
   const theme = useTheme();
   const [showComponent, setShowComponent] = useState(false);
+
   useEffect(() => setShowComponent(true), []);
+
   const handleReturn = () => {
     setClicked(false);
   };
+
   return (
     <div
       style={{
@@ -36,9 +41,7 @@ export default function Prochat({ setClicked }) {
             height: "100vh",
             width: "100vw",
           }}
-          helloMessage={
-            "欢迎使用 帮你读 ，我是你的专属机器人，你将要查询的科目是{。。。}，请输入需要查询的内容。"
-          }
+          helloMessage={`欢迎使用帮你读，你将要查询的科目是 ${selectedImageInfo} ，请输入需要查询的内容。`}
           request={async (messages) => {
             const response = await fetch("/api/test", {
               method: "POST",

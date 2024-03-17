@@ -4,10 +4,10 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import styles from "./CenterMode.module.css";
 
-function CenterMode({ setClicked }) {
+function CenterMode({ setClicked, setSelectedImageInfo }) {
   const sliderRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-
+  const imageInfo = ["需求工程", "操作系统", "计算机网络"];
   const settings = {
     className: "center",
     centerMode: true,
@@ -17,7 +17,6 @@ function CenterMode({ setClicked }) {
     speed: 500,
     dots: true,
   };
-
   const imageUrls = [
     "https://node2d-public.hep.com.cn/37197bc254b97d32e5a1743d1428c44e.jpg-small?e=1709741130&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:-ICrqml9NpE0GNWMuQ7aAU1e6lI=",
     "https://node2d-public.hep.com.cn/bbd7693befd221e400c76cd30adb086d.jpg-small?e=1709742273&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:Zn62YEcqP-WMlsKOH3dbSqeVnvs=",
@@ -27,11 +26,13 @@ function CenterMode({ setClicked }) {
   const handleClick = (index) => {
     if (index === selectedImageIndex) {
       setSelectedImageIndex(null);
+      setSelectedImageInfo(null);
     } else {
       setSelectedImageIndex(index);
+      setSelectedImageInfo(imageInfo[index]);
       sliderRef.current.slickGoTo(index - 1);
       setClicked(true);
-      console.log("index===", index);
+      console.log("info===", imageInfo[index]);
     }
   };
 
