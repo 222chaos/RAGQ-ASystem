@@ -10,7 +10,8 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const { query, array } = await req.json();
+      const { messages } = await req.json();
+      console.log(messages);
 
       const embedding = await openai.embeddings.create({
         model: "text-embedding-ada-002",
@@ -18,6 +19,10 @@ export default async function handler(req, res) {
         encoding_format: "float",
       });
       const embeddingData = embedding.data[0].embedding;
+      const userMessages = messages.map((message) => ({
+        role: "user",
+        content: message.content,
+      }));
 
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
