@@ -9290,6 +9290,7 @@ export default async function handler(req, res) {
       });
 
       const prepareData = async () => {
+        //+++++++++创建新的collection的位置
         const collectionName = "jsjwl";
 
         // 获取已存在的集合列表
@@ -9352,6 +9353,7 @@ export default async function handler(req, res) {
 
       res.status(200).json({ data: textChunks });
     } catch (error) {
+      console.log(error);
       console.error("Error:", error.message, "123123");
       res.status(500).json({ message: "Internal server error" });
     }
