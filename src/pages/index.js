@@ -21,13 +21,16 @@ const IndexPage = () => {
   const handleContentSubmit = async () => {
     try {
       setUploading(true);
-      const res = await fetch(/*http://127.0.0.1:5000/fenci*/ "/api/storage2", {
-        method: "POST",
-        body: JSON.stringify({ content }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await fetch(
+        /*http://127.0.0.1:5000/fenci*/ "/api/embedding",
+        {
+          method: "POST",
+          body: JSON.stringify({ content }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await res.json();
       setArray(data);
 
