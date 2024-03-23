@@ -9,7 +9,7 @@ const openai = new OpenAI({
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const content = `
-    `;
+     `;
 
     console.log("content======>", content);
 
@@ -41,41 +41,41 @@ export default async function handler(req, res) {
       for (let i = startIndex; i < textChunks.length; i++) {
         const item = textChunks[i];
 
-        const embedding = await openai.embeddings.create({
-          model: "text-embedding-ada-002",
-          input: item,
-          encoding_format: "float",
-        });
-        console.log("已进行", i);
+        await openai.embeddings
+          .create({
+            model: "text-embedding-ada-002",
+            input: item,
+            encoding_format: "float",
+          })
+          .then((embedding) => {
+            embeddings.push(embedding.data[0].embedding);
+            console.log(`已完成 ${i}.`);
 
-        embeddings.push(embedding.data[0].embedding);
+            // 将当前 embedding 写入文件
+            const filePath = path.join(
+              process.cwd(),
+              "src",
+              "pages",
+              "api",
+              "emjsjwl.txt"
+            );
+            fs.appendFileSync(
+              filePath,
+              JSON.stringify(embedding.data[0].embedding) + "\n"
+            );
 
-        // 输出完成嵌入的序号
-        console.log(`Completed embedding for chunk ${i}.`);
+            // 更新已完成嵌入的序号
+            const updatedIndex = i + 1;
+            const startIndexFilePath = path.join(
+              process.cwd(),
+              "src",
+              "pages",
+              "api",
+              "sijsjwl.txt"
+            );
+            fs.writeFileSync(startIndexFilePath, updatedIndex.toString());
+          });
       }
-
-      console.log(embeddings);
-
-      // 将 embeddings 写入文件
-      const filePath = path.join(
-        process.cwd(),
-        "src",
-        "pages",
-        "api",
-        "emjsjwl.txt"
-      );
-      fs.writeFileSync(filePath, JSON.stringify(embeddings));
-
-      // 更新已完成嵌入的序号
-      const updatedIndex = startIndex + embeddings.length;
-      const startIndexFilePath = path.join(
-        process.cwd(),
-        "src",
-        "pages",
-        "api",
-        "sijsjwl.txt"
-      );
-      fs.writeFileSync(startIndexFilePath, updatedIndex.toString());
 
       res.status(200).json({ embeddings });
     } catch (error) {
