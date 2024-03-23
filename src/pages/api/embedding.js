@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
     let startIndex = 0;
     try {
-      const startIndexFilePath = path.join(process.cwd(), "startIndex.txt");
+      const startIndexFilePath = path.join(process.cwd(), "sijsjwl.txt");
 
       // 读取已经完成嵌入的序号
       if (fs.existsSync(startIndexFilePath)) {
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
           input: item,
           encoding_format: "float",
         });
-        console.log("embedding======", embedding);
+        console.log("已进行", i);
 
         embeddings.push(embedding.data[0].embedding);
 
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
         "src",
         "pages",
         "api",
-        "embedding.txt"
+        "emjsjwl.txt"
       );
       fs.writeFileSync(filePath, JSON.stringify(embeddings));
 
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
         "src",
         "pages",
         "api",
-        "startIndex.txt"
+        "sijsjwl.txt"
       );
       fs.writeFileSync(startIndexFilePath, updatedIndex.toString());
 
