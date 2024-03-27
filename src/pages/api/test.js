@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
-  baseURL: process.env.PROXY_URL,
+  base: process.env.PROXY_URL,
 });
 console.log("process.env.PROXY_URL==", process.env.PROXY_URL);
 export const config = {

@@ -1,43 +1,29 @@
-import OpenAI from "openai";
 import { QdrantClient } from "@qdrant/js-client-rest";
-
-const openai = new OpenAI({
-  apiKey: process.env.API_KEY,
-});
+import fs from "fs";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    const { content } = req.body;
-
-    console.log("content======>", content);
-    const chunkSize = 150;
-    const textChunks = [];
-    for (let i = 0; i < content.length; i += chunkSize) {
-      textChunks.push(content.substring(i, i + chunkSize));
-    }
     try {
+      const filePath = "src/pages/api/emjsjwl.txt";
+      const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      console.log("content======>", content);
+
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
       });
 
       const prepareData = async () => {
-        const collectionName = "test_collection";
-
-        // 获取已存在的集合列表
+        const collectionName = "jsjwl";
         let result = await client.getCollections();
-
-        // 提取集合名称
         const collectionNames = result.collections.map(
           (collection) => collection.name
         );
 
-        // 如果集合已存在，则删除它
         if (collectionNames.includes(collectionName)) {
           await client.deleteCollection(collectionName);
         }
 
-        // 创建新的集合
         await client.createCollection(collectionName, {
           vectors: {
             size: 1536,
@@ -55,21 +41,16 @@ export default async function handler(req, res) {
 
         let index = 0;
         const points = [];
-        for await (const item of textChunks) {
+        for await (const item of content) {
           console.log("###############");
 
           console.log(index, " /////", item);
-          const embedding = await openai.embeddings.create({
-            model: "text-embedding-ada-002",
-            input: item,
-            encoding_format: "float",
-          });
-          const embeddingData = embedding.data[0].embedding;
+
           points.push({
             id: index,
-            vector: embeddingData,
+            vector: item,
             payload: {
-              text: [""],
+              text: index,
             },
           });
           index++;
@@ -81,10 +62,10 @@ export default async function handler(req, res) {
       };
 
       await prepareData();
-
-      res.status(200).json({ data: textChunks });
+      console.log("Data uploaded successfully");
+      res.status(200).json({ message: "Data uploaded successfully" });
     } catch (error) {
-      console.error("Error:", error.message, "123123");
+      console.error("Error:", error.message);
       res.status(500).json({ message: "Internal server error" });
     }
   } else {

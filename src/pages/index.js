@@ -8,7 +8,7 @@ const IndexPage = () => {
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
   const handleContentSubmit = async () => {
     try {
-      const res = await fetch("/api/embedding", {
+      const res = await fetch("/api/storage", {
         method: "POST",
         body: JSON.stringify({}),
         headers: {
