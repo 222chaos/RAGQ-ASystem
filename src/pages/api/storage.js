@@ -6,8 +6,7 @@ export default async function handler(req, res) {
     try {
       const filePath = "src/pages/api/emjsjwl.txt";
       const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      console.log("content======>", content);
-
+      console.log("jsj.len:", content.length);
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
@@ -19,7 +18,7 @@ export default async function handler(req, res) {
         const collectionNames = result.collections.map(
           (collection) => collection.name
         );
-
+        /*
         if (collectionNames.includes(collectionName)) {
           await client.deleteCollection(collectionName);
         }
@@ -34,26 +33,25 @@ export default async function handler(req, res) {
           },
           replication_factor: 2,
         });
-
+*/
         result = await client.getCollections();
 
         console.log("集合列表:", result.collections);
 
-        let index = 0;
+        let index = 1904;
         const points = [];
-        for await (const item of content) {
-          console.log("###############");
 
-          console.log(index, " /////", item);
+        for (let i = index; i < content.length; i++) {
+          const item = content[i];
+          console.log("jsj", i);
 
           points.push({
-            id: index,
+            id: i,
             vector: item,
             payload: {
-              text: index,
+              text: i,
             },
           });
-          index++;
 
           await client.upsert(collectionName, {
             points: points,

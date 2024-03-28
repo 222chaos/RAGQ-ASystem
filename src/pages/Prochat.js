@@ -6,7 +6,6 @@ import { LeftOutlined } from "@ant-design/icons";
 import React from "react";
 
 export default function Prochat({ setClicked, selectedImageInfo }) {
-  console.log("imageInfo====", selectedImageInfo);
   const theme = useTheme();
   const [showComponent, setShowComponent] = useState(false);
 
@@ -43,9 +42,13 @@ export default function Prochat({ setClicked, selectedImageInfo }) {
           }}
           helloMessage={`欢迎使用帮你读，你将要查询的科目是 ${selectedImageInfo} ，请输入需要查询的内容。`}
           request={async (messages) => {
-            const response = await fetch("/api/test", {
+            const requestBody = {
+              query: messages,
+              selectedImageInfo: selectedImageInfo,
+            };
+            const response = await fetch("/api/query", {
               method: "POST",
-              body: JSON.stringify({ messages: messages }),
+              body: JSON.stringify(requestBody),
             });
 
             return response;

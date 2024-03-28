@@ -8,7 +8,7 @@ const IndexPage = () => {
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
   const handleContentSubmit = async () => {
     try {
-      const res = await fetch("/api/storage", {
+      const res = await fetch("/api/slice", {
         method: "POST",
         body: JSON.stringify({}),
         headers: {
@@ -31,13 +31,13 @@ const IndexPage = () => {
         <div style={{ position: "relative" }}>
           <h1 style={{ marginLeft: "20px", position: "absolute" }}>帮你读</h1>
           <div style={{ position: "fixed", bottom: 20, right: 20 }}>
-            {/* 将按钮放置在页面右下角 */}
             <Button type="primary" onClick={handleContentSubmit}>
-              提交
+              提交1
             </Button>
           </div>
         </div>
       )}
+
       {clicked ? (
         <Prochat
           setClicked={setClicked}
