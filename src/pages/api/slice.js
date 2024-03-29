@@ -1,31 +1,88 @@
 import fs from "fs";
+import path from "path";
 
-async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "POST") {
-    try {
-      const filePath = "src/pages/api/jsjwl.txt";
-      const content = fs.readFileSync(filePath, "utf-8");
-      console.log(content);
-      const chunks = splitTextIntoChunks(content, 200);
-      const outputPath = "src/pages/api/emjsjwl.txt";
+    const content = `  
+     `;
 
-      // 将分隔后的内容写入新文件
-      fs.writeFileSync(outputPath, JSON.stringify(chunks), "utf-8");
-      console.log("success");
-      res.status(200).json({ success: true });
+    console.log("Received request content:", content);
+
+    let textChunks = content.split("\n");
+
+    // 合并内容，确保每个item长度不少于200字
+    for (let i = 0; i < textChunks.length - 1; i++) {
+      while ((textChunks[i] + textChunks[i + 1]).length < 200) {
+        textChunks[i] += "\n" + textChunks[i + 1];
+        textChunks.splice(i + 1, 1);
+      }
+    }
+
+    let startIndex = 0;
+    try {
+      const startIndexFilePath = path.join(
+        process.cwd(),
+        "src",
+        "pages",
+        "api",
+        "si.txt"
+      );
+
+      // 读取已经完成嵌入的序号
+      if (fs.existsSync(startIndexFilePath)) {
+        const startIndexContent = fs.readFileSync(startIndexFilePath, "utf-8");
+        console.log("Start Index file content:", startIndexContent);
+        startIndex = parseInt(startIndexContent.trim());
+        console.log("Start Index:", startIndex);
+      }
     } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ success: false, error: error.message });
+      console.error("Error reading startIndex:", error.message);
+    }
+
+    try {
+      for (let i = startIndex; i < textChunks.length; i++) {
+        const item = textChunks[i];
+
+        // 将当前 item 写入文件
+        const filePath = path.join(
+          process.cwd(),
+          "src",
+          "pages",
+          "api",
+          "xqgc.txt"
+        );
+        fs.appendFileSync(
+          filePath,
+          JSON.stringify(item) + "," // 在每个 item 后添加逗号以分隔
+        );
+
+        // 更新已完成嵌入的序号
+        const updatedIndex = i + 1;
+        const startIndexFilePath = path.join(
+          process.cwd(),
+          "src",
+          "pages",
+          "api",
+          "si.txt"
+        );
+        fs.writeFileSync(startIndexFilePath, updatedIndex.toString());
+
+        console.log("Updated startIndex file with index:", updatedIndex);
+      }
+
+      console.log("All content processed.");
+      res.status(200).json({ message: "Content written to file" });
+    } catch (error) {
+      console.error("Error:", error.message);
+      res.status(500).json({ message: "Internal server error" });
     }
   } else {
-    res.status(405).json({ success: false, message: "Method Not Allowed" });
+    res.status(405).json({ status: "Method not allowed" });
   }
 }
 
-// 分隔文本函数
-function splitTextIntoChunks(text, chunkSize) {
-  const regex = new RegExp(`.{1,${chunkSize}}`, "g");
-  return text.match(regex);
-}
-
-export default handler;
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};

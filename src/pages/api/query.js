@@ -13,34 +13,19 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const { query, selectedImageInfo } = await req.json();
-      let path = "";
+
       let selectedInfo = "";
       if (selectedImageInfo == "计算机网络") {
-        path = "public/data/jsjwl.txt";
         selectedInfo = "jsjwl";
       }
       if (selectedImageInfo == "需求工程") {
-        path = "public/data/xqgc.txt";
         selectedInfo = "xqgc";
       }
       if (selectedImageInfo == "操作系统") {
-        path = "public/data/czxt.txt";
         selectedInfo = "czxt";
       }
       console.log(selectedImageInfo);
-      console.log("query=========", query[0].content);
-
-      const readFileResponse = await fetch(
-        "http://localhost:3000/api/readFile",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ path }),
-        }
-      );
-      const array = await readFileResponse.json();
+      console.log("query=========", query[query.length - 1].content);
 
       //const rolePlayText = ` `;
 
@@ -58,11 +43,11 @@ export default async function handler(req, res) {
       const collectionName = selectedInfo;
       const res1 = await client.search(collectionName, {
         vector: embeddingData,
-        limit: 1,
+        limit: 2,
       });
-
-      let content = array[res1[0]?.id];
-
+      console.log("search result: ", res1);
+      const contents = res1.map((item) => item.payload.content);
+      console.log(contents);
       const encoder = new TextEncoder();
       const userMessages = query.map((query) => ({
         role: "user",
@@ -76,7 +61,7 @@ export default async function handler(req, res) {
             role: "user",
             content: `\n
 问题："""${query}"""
-可能的答案:"""${JSON.stringify(content)}"""
+可能的答案:"""${JSON.stringify(contents)}"""
 \n
 基于以上的问题和可能的答案总结一个得体并且言简意骇的回答，只需要输出回答即可。
 例如：
