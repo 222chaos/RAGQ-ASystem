@@ -14,13 +14,13 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     console.log("api");
     try {
-      const { messages } = await req.json();
-      console.log(messages);
+      const { query } = await req.json();
+      console.log(query);
       const userId = uuidv4();
       const rolePlayText = ` `;
 
       const encoder = new TextEncoder();
-      const userMessages = messages.map((message) => ({
+      const userMessages = query.map((message) => ({
         role: "user",
         content: message.content,
       }));

@@ -6,7 +6,7 @@ import Prochat from "./Prochat";
 const IndexPage = () => {
   const [clicked, setClicked] = useState(false);
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
-  const handleContentSubmit = async () => {
+  /*  const handleContentSubmit = async () => {
     try {
       const res = await fetch("/api/ow", {
         method: "POST",
@@ -22,41 +22,31 @@ const IndexPage = () => {
       console.error("内容上传请求出错:", error);
     }
   };
-
+*/
   return (
     <div>
-      {clicked ? (
-        <div></div>
-      ) : (
-        <div style={{ position: "relative" }}>
-          <h1 style={{ marginLeft: "20px", position: "absolute" }}>帮你读</h1>
-          <div style={{ position: "fixed", bottom: 20, right: 20 }}>
-            <Button type="primary" onClick={handleContentSubmit}>
-              提交1
-            </Button>
-          </div>
-        </div>
-      )}
-
       {clicked ? (
         <Prochat
           setClicked={setClicked}
           selectedImageInfo={selectedImageInfo}
         />
       ) : (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-          }}
-        >
-          <CenterMode
-            setClicked={setClicked}
-            setSelectedImageInfo={setSelectedImageInfo}
-          />
-        </div>
+        <>
+          <h1></h1>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh",
+            }}
+          >
+            <CenterMode
+              setClicked={setClicked}
+              setSelectedImageInfo={setSelectedImageInfo}
+            />
+          </div>
+        </>
       )}
     </div>
   );

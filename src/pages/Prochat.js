@@ -46,7 +46,7 @@ export default function Prochat({ setClicked, selectedImageInfo }) {
               query: messages,
               selectedImageInfo: selectedImageInfo,
             };
-            const response = await fetch("/api/query", {
+            const response = await fetch("/api/test", {
               method: "POST",
               body: JSON.stringify(requestBody),
             });
