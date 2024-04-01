@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.3.6",
     "@ant-design/pro-chat": "^1.10.1",
     "@qdrant/js-client-rest": "^1.7.0",
     "antd": "^5.15.1",

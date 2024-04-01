@@ -6,23 +6,7 @@ import Prochat from "./Prochat";
 const IndexPage = () => {
   const [clicked, setClicked] = useState(false);
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
-  /*  const handleContentSubmit = async () => {
-    try {
-      const res = await fetch("/api/ow", {
-        method: "POST",
-        body: JSON.stringify({}),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      console.log(data);
-      console.log("开始上传");
-    } catch (error) {
-      console.error("内容上传请求出错:", error);
-    }
-  };
-*/
+
   return (
     <div>
       {clicked ? (

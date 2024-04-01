@@ -3,6 +3,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import styles from "./CenterMode.module.css";
+import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 
 function CenterMode({ setClicked, setSelectedImageInfo }) {
   const sliderRef = useRef(null);
@@ -15,7 +16,9 @@ function CenterMode({ setClicked, setSelectedImageInfo }) {
     centerPadding: "10px",
     slidesToShow: 3,
     speed: 500,
+
     dots: true,
+    arrows: false,
   };
   const imageUrls = [
     "https://node2d-public.hep.com.cn/37197bc254b97d32e5a1743d1428c44e.jpg-small?e=1709741130&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:-ICrqml9NpE0GNWMuQ7aAU1e6lI=",
@@ -36,6 +39,14 @@ function CenterMode({ setClicked, setSelectedImageInfo }) {
     }
   };
 
+  const handlePrev = () => {
+    sliderRef.current.slickPrev();
+  };
+
+  const handleNext = () => {
+    sliderRef.current.slickNext();
+  };
+
   return (
     <div className={styles.container}>
       <Slider ref={sliderRef} {...settings}>
@@ -52,6 +63,12 @@ function CenterMode({ setClicked, setSelectedImageInfo }) {
           </div>
         ))}
       </Slider>
+      <div className={styles.leftArrow} onClick={handlePrev}>
+        <ArrowLeftOutlined style={{ fontSize: "32px" }} />
+      </div>
+      <div className={styles.rightArrow} onClick={handleNext}>
+        <ArrowRightOutlined style={{ fontSize: "32px" }} />
+      </div>
     </div>
   );
 }
