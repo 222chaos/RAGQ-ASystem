@@ -3,9 +3,26 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import styles from "./CenterMode.module.css";
-import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  notification,
+} from "@ant-design/icons";
 
 function CenterMode({ setClicked, setSelectedImageInfo }) {
+  const [api, contextHolder] = notification.useNotification();
+
+  const openNotification = () => {
+    api.open({
+      message: "Notification Title",
+      description:
+        "This is the content of the notification. This is the content of the notification. This is the content of the notification.",
+      className: "custom-class",
+      style: {
+        width: 600,
+      },
+    });
+  };
   const sliderRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const imageInfo = ["需求工程", "操作系统", "计算机网络"];
@@ -49,6 +66,9 @@ function CenterMode({ setClicked, setSelectedImageInfo }) {
 
   return (
     <div className={styles.container}>
+      <Button type="primary" onClick={openNotification}>
+        Open the notification box
+      </Button>
       <Slider ref={sliderRef} {...settings}>
         {imageUrls.map((url, index) => (
           <div key={index} className={styles["slider-item"]}>
