@@ -2,6 +2,6 @@ body,
 html {
   margin: 0;
   padding: 0;
-  background-color: #cafedb;
+  background-color: rgb(245, 245, 245);
   overflow: hidden;
 }

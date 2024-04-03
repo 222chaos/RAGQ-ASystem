@@ -5,7 +5,7 @@ import { useTheme } from "antd-style";
 import { LeftOutlined } from "@ant-design/icons";
 import React from "react";
 
-export default function Prochat({ setClicked, selectedImageInfo }) {
+export default function Prochat({ setClick, setClicked, selectedImageInfo }) {
   const theme = useTheme();
   const [showComponent, setShowComponent] = useState(false);
 
@@ -21,11 +21,10 @@ export default function Prochat({ setClicked, selectedImageInfo }) {
         backgroundColor: theme.colorBgLayout,
       }}
     >
-      <div style={{ position: "fixed", top: "8px", left: "8px", zIndex: 999 }}>
+      <div style={{ position: "fixed", top: "4px", left: "8px", zIndex: 999 }}>
         <Button
           style={{
             position: "absolute",
-            top: "8px",
             left: "8px",
           }}
           onClick={handleReturn}
@@ -46,7 +45,7 @@ export default function Prochat({ setClicked, selectedImageInfo }) {
               query: messages,
               selectedImageInfo: selectedImageInfo,
             };
-            const response = await fetch("/api/test", {
+            const response = await fetch("/api/query", {
               method: "POST",
               body: JSON.stringify(requestBody),
             });

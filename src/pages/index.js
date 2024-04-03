@@ -2,18 +2,18 @@ import React, { useState } from "react";
 import { Button, notification } from "antd";
 import CenterMode from "./Carousel";
 import Prochat from "./Prochat";
-import Notification from "./Notification";
+import NotificationComponent from "./Notification";
 
 import WelcomePage from "./WelcomePage";
 
 const IndexPage = () => {
+  const [click, setClick] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
-  const [click, setClick] = useState(false);
 
   return (
     <div>
-      {click ? (
+      {click && !clicked && (
         <>
           <h1
             style={{
@@ -43,8 +43,6 @@ const IndexPage = () => {
             />
           </div>
         </>
-      ) : (
-        <WelcomePage setClick={setClick} />
       )}
       {clicked && (
         <Prochat
@@ -52,6 +50,7 @@ const IndexPage = () => {
           selectedImageInfo={selectedImageInfo}
         />
       )}
+      {!click && !clicked && <WelcomePage setClick={setClick} />}
     </div>
   );
 };
