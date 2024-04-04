@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button, Skeleton } from 'antd';
+import { Button } from 'antd';
 import { motion } from 'framer-motion';
+
 const WelcomePage = ({ setClick }) => {
   const handleClick = () => {
     setClick(true);
@@ -9,18 +10,20 @@ const WelcomePage = ({ setClick }) => {
   return (
     <>
       <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         style={{
-          maxHeight: '92vh',
-          overflow: 'auto',
+          position: 'fixed',
+          width: '100%',
+          height: '100%',
           background: `url(/background6.jpg)`,
           backgroundSize: 'cover',
-          height: '100vh',
           color: '#ffffff',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'flex-start',
           flexDirection: 'column',
-          padding: '2rem',
+          overflowY: 'auto',
         }}
       >
         <div style={{ marginLeft: '2rem' }}>
