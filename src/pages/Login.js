@@ -1,5 +1,7 @@
 import { useSession, signIn, signOut, SessionProvider } from "next-auth/react";
+import { Button } from "antd";
 import React from "react";
+
 export default function Component() {
   return (
     <SessionProvider>
@@ -13,15 +15,15 @@ function AuthComponent() {
   if (session) {
     return (
       <>
-        Signed in as {session.user.email} <br />
-        <button onClick={() => signOut()}>Sign out</button>
+        Welcome, {session.user.name}! <br />
+        <Button onClick={() => signOut()}>Sign out</Button>
       </>
     );
   }
   return (
     <>
-      Not signed in <br />
-      <button onClick={() => signIn()}>Sign in</button>
+      Please sign in <br />
+      <Button onClick={() => signIn()}>Sign in</Button>
     </>
   );
 }
