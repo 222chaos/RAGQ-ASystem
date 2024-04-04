@@ -1,6 +1,6 @@
-import { useSession, signIn, signOut, SessionProvider } from "next-auth/react";
-import { Button } from "antd";
-import React from "react";
+import { useSession, signIn, signOut, SessionProvider } from 'next-auth/react';
+import { Button } from 'antd';
+import React from 'react';
 
 export default function Component() {
   return (

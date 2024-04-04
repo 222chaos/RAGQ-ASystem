@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, Modal } from "antd";
+import React, { useState, useEffect } from 'react';
+import { Button, Modal } from 'antd';
 
 const App = () => {
   const [isModalOpen, setModalOpen] = useState(false);

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Button, notification } from "antd";
-import Carousel from "./Carousel";
-import Prochat from "./Prochat";
-import NotificationComponent from "./Notification";
-import Login from "./Login";
-import WelcomePage from "./WelcomePage";
+import React, { useState } from 'react';
+import { Button, notification } from 'antd';
+import Carousel from './Carousel';
+import Prochat from './Prochat';
+import NotificationComponent from './Notification';
+import Login from './Login';
+import WelcomePage from './WelcomePage';
 
 const IndexPage = () => {
   const [click, setClick] = useState(false);
@@ -18,24 +18,24 @@ const IndexPage = () => {
           <Login />
           <h1
             style={{
-              fontFamily: "Impact, sans-serif",
-              color: "darkred",
-              textTransform: "uppercase",
-              textAlign: "left",
-              fontSize: "4em",
-              paddingLeft: "8vw",
-              fontWeight: "bold",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+              fontFamily: 'Impact, sans-serif',
+              color: 'darkred',
+              textTransform: 'uppercase',
+              textAlign: 'left',
+              fontSize: '4em',
+              paddingLeft: '8vw',
+              fontWeight: 'bold',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
             }}
           >
             Reading Helper
           </h1>
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "70vh",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '70vh',
             }}
           >
             <Carousel
