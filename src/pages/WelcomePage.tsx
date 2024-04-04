@@ -1,33 +1,17 @@
 import React from 'react';
-import { useSpring, animated } from 'react-spring';
 import { Button, Skeleton } from 'antd';
-
-const calc = (x, y) => [
-  -(y - window.innerHeight / 2) / 3000,
-  (x - window.innerWidth / 2) / 3000,
-  1,
-];
-const trans = (x, y, s) =>
-  `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`;
-
+import { motion } from 'framer-motion';
 const WelcomePage = ({ setClick }) => {
-  const [props, set] = useSpring(() => ({
-    xys: [0, 0, 1],
-    config: { mass: 5, tension: 350, friction: 40 },
-  }));
-
   const handleClick = () => {
     setClick(true);
   };
 
   return (
     <>
-      <animated.div
+      <motion.div
         style={{
-          maxHeight: '90vh',
+          maxHeight: '92vh',
           overflow: 'auto',
-          margin: 8,
-          transform: props.xys.interpolate(trans),
           background: `url(/background6.jpg)`,
           backgroundSize: 'cover',
           height: '100vh',
@@ -38,8 +22,6 @@ const WelcomePage = ({ setClick }) => {
           flexDirection: 'column',
           padding: '2rem',
         }}
-        onMouseMove={({ clientX: x, clientY: y }) => set({ xys: calc(x, y) })}
-        onMouseLeave={() => set({ xys: [0, 0, 1] })}
       >
         <div style={{ marginLeft: '2rem' }}>
           <h1 style={{ fontSize: '4rem', marginBottom: '4rem' }}>
@@ -64,7 +46,7 @@ const WelcomePage = ({ setClick }) => {
         >
           立即体验
         </Button>
-      </animated.div>
+      </motion.div>
     </>
   );
 };
