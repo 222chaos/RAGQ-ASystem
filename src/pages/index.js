@@ -3,7 +3,7 @@ import { Button, notification } from "antd";
 import Carousel from "./Carousel";
 import Prochat from "./Prochat";
 import NotificationComponent from "./Notification";
-
+import Login from "./Login";
 import WelcomePage from "./WelcomePage";
 
 const IndexPage = () => {
@@ -15,6 +15,7 @@ const IndexPage = () => {
     <div>
       {click && !clicked && (
         <>
+          <Login />
           <h1
             style={{
               fontFamily: "Impact, sans-serif",
