@@ -20,8 +20,8 @@ const App = () => {
   };
 
   useEffect(() => {
-    openNotification(); // 在组件挂载后自动弹出通知
-  }, []); // 空数组表示只在组件挂载后执行一次
+    openNotification();
+  }, []);
 
   return (
     <>

@@ -2,10 +2,10 @@ import React, { useRef, useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import styles from "./CenterMode.module.css";
+import styles from "./Carousel.module.css";
 import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 
-function CenterMode({ setClicked, setSelectedImageInfo }) {
+function Carousel({ setClicked, setSelectedImageInfo }) {
   const sliderRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const imageInfo = ["需求工程", "操作系统", "计算机网络"];
@@ -73,4 +73,4 @@ function CenterMode({ setClicked, setSelectedImageInfo }) {
   );
 }
 
-export default CenterMode;
+export default Carousel;

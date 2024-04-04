@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, notification } from "antd";
-import CenterMode from "./Carousel";
+import Carousel from "./Carousel";
 import Prochat from "./Prochat";
 import NotificationComponent from "./Notification";
 
@@ -37,7 +37,7 @@ const IndexPage = () => {
               height: "70vh",
             }}
           >
-            <CenterMode
+            <Carousel
               setClicked={setClicked}
               setSelectedImageInfo={setSelectedImageInfo}
             />

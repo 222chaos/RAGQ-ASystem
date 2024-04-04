@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
       const embedding = await openai.embeddings.create({
         model: "text-embedding-ada-002",
-        input: query[0].content,
+        input: query[query.length - 1].content,
         encoding_format: "float",
       });
       const embeddingData = embedding.data[0].embedding;
