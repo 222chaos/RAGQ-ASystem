@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.6",
-    "@ant-design/pro-chat": "^2.0.0",
+    "@ant-design/pro-chat": "^2.0.2",
     "@qdrant/js-client-rest": "^1.7.0",
     "antd": "^5.15.1",
     "antd-style": "^3.6.1",
