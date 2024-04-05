@@ -5,21 +5,31 @@ import Notification from './Notification';
 import Login from './Login';
 import WelcomePage from './WelcomePage';
 import { useSession } from 'next-auth/react';
+
 const IndexPage = () => {
-  const { data: session } = useSession();
-  const [click, setClick] = useState(false);
+  const { data: session, status } = useSession();
   const [clicked, setClicked] = useState(false);
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (session) {
       setLoggedIn(true);
+      setLoading(true);
     }
   }, [session]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      setLoading(false);
+    }
+  }, [status]);
+
   return (
     <div>
       <Notification />
-      {!clicked && (
+      {!loading && !clicked && loggedIn && (
         <>
           <Login />
           <Carousel
@@ -35,7 +45,7 @@ const IndexPage = () => {
           setClick={undefined}
         />
       )}
-      {!click && !clicked && !loggedIn && <WelcomePage setClick={setClick} />}
+      {!loggedIn && !loading && <WelcomePage />}
     </div>
   );
 };

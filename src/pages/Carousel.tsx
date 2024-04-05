@@ -4,6 +4,7 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import styles from './Carousel.module.css';
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { motion } from 'framer-motion';
 import { useSession, signIn, signOut, SessionProvider } from 'next-auth/react';
 
 function Carousel({ setClicked, setSelectedImageInfo }) {
@@ -78,7 +79,11 @@ function Carousel({ setClicked, setSelectedImageInfo }) {
   };
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.75 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <h1
         style={{
           fontFamily: 'Impact, sans-serif',
@@ -120,7 +125,7 @@ function Carousel({ setClicked, setSelectedImageInfo }) {
           </>
         )}
       </div>
-    </>
+    </motion.div>
   );
 }
 

@@ -16,9 +16,9 @@ const Notification = () => {
       api.success({
         message: '登录成功',
         description: `你好, ${session.user.name}!`,
-        placement: 'topRight',
+        placement: 'bottomRight',
       });
-      setNotificationShown(true); // 标记通知已显示
+      setNotificationShown(true);
     }
   }, [session, notificationShown, api]);
 

@@ -1,16 +1,17 @@
 import React from 'react';
 import { Button } from 'antd';
 import { motion } from 'framer-motion';
+import { signIn } from 'next-auth/react';
 
-const WelcomePage = ({ setClick }) => {
-  const handleClick = () => {
-    setClick(true);
+const WelcomePage = () => {
+  const handleClick = async () => {
+    await signIn();
   };
 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
+        initial={{ opacity: 0, scale: 0.75 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         style={{
