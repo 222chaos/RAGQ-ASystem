@@ -9,7 +9,6 @@ export default function Component() {
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
-
         padding: 4,
       }}
     >

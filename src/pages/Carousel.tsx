@@ -50,9 +50,9 @@ function Carousel() {
   useEffect(() => {
     const handleResize = () => {
       const screenWidth = window.innerWidth;
-      if (screenWidth <= 768) {
+      if (screenWidth <= 850) {
         setSlidesToShow(1);
-      } else if (screenWidth <= 1024) {
+      } else if (screenWidth <= 1250) {
         setSlidesToShow(2);
       } else {
         setSlidesToShow(3);

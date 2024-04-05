@@ -3,7 +3,7 @@
   min-width: 400px;
   max-width: 80vw;
   margin: 0 auto;
-  backdrop-filter: blur(10px);
+
   border-radius: 20px;
 }
 
@@ -20,7 +20,7 @@
 
 .slider-item:hover {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
+
   background-color: rgba(235, 47, 150, 0.1);
 }
 
@@ -29,7 +29,7 @@
   width: 250px;
   transition: transform 0.3s ease;
   height: 320px;
-  display: block;
+
   margin: auto;
   text-align: center;
 }
@@ -46,9 +46,9 @@
 }
 
 .leftArrow {
-  left: 2%;
+  left: -8%;
 }
 
 .rightArrow {
-  right: 2%;
+  right: -8%;
 }
