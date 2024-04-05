@@ -58,6 +58,7 @@ export default function ChatPage() {
             size="small"
             style={{
               marginRight: 8,
+              padding: 2,
             }}
             onClick={() => router.push('/use')}
             type="primary"
