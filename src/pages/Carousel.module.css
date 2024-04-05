@@ -1,4 +1,5 @@
 .container {
+  position: relative;
   width: 80%;
   margin: 0 auto;
   background: rgb(255, 255, 255);
@@ -29,15 +30,15 @@
 .leftArrow,
 .rightArrow {
   position: absolute;
-  top: 54%;
+  top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
 }
 
 .leftArrow {
-  left: 12%; /* 调整左箭头位置 */
+  left: 2%;
 }
 
 .rightArrow {
-  right: 12%; /* 调整右箭头位置 */
+  right: 2%;
 }

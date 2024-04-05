@@ -49,6 +49,7 @@ const IndexPage = () => {
         <Prochat
           setClicked={setClicked}
           selectedImageInfo={selectedImageInfo}
+          setClick={undefined}
         />
       )}
       {!click && !clicked && <WelcomePage setClick={setClick} />}
