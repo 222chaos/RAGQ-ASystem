@@ -1,10 +1,10 @@
 .container {
   position: relative;
-  width: 80%;
+  min-width: 400px;
+  max-width: 80vw;
   margin: 0 auto;
-  background: rgb(255, 255, 255);
-  border: 1px solid rgb(98, 98, 98);
-  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
 }
 
 .slider-item {
@@ -12,24 +12,34 @@
   position: relative;
   overflow: hidden;
   width: 80%;
+  padding: 42px;
+}
+.center img {
+  transform: translateY(-20px) scale(1.12);
 }
 
-.slider-item:hover,
-.slider-item.center {
-  transform: scale(1.2);
+.slider-item:hover {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  background-color: rgba(235, 47, 150, 0.1);
 }
 
 .slider-item img {
   padding: 8%;
-  width: 56%;
-  height: auto;
+  width: 250px;
+  transition: transform 0.3s ease;
+  height: 320px;
   display: block;
   margin: auto;
   text-align: center;
 }
+
 .leftArrow,
 .rightArrow {
   position: absolute;
+  background-color: rgba(235, 47, 150, 1);
+  padding: 12px;
+  border-radius: 50%;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;

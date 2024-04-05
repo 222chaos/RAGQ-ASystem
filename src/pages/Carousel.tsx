@@ -1,34 +1,52 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import styles from './Carousel.module.css';
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
-import { motion } from 'framer-motion';
-import { useSession, signIn, signOut, SessionProvider } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
+import { Button, message, theme } from 'antd';
+import classnames from 'classnames';
+import { useRouter } from 'next/router';
 
-function Carousel({ setClicked, setSelectedImageInfo }) {
+export const imageInfoList = [
+  {
+    title: '需求工程',
+    url: 'https://node2d-public.hep.com.cn/37197bc254b97d32e5a1743d1428c44e.jpg-small?e=1709741130&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:-ICrqml9NpE0GNWMuQ7aAU1e6lI=',
+  },
+  {
+    title: '操作系统',
+    url: 'https://node2d-public.hep.com.cn/bbd7693befd221e400c76cd30adb086d.jpg-small?e=1709742273&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:Zn62YEcqP-WMlsKOH3dbSqeVnvs=',
+  },
+  {
+    title: '计算机网络',
+    url: 'https://node2d-public.hep.com.cn/0747dff8c1bf2f5d32531a6e5a9ec707.jpg-small?e=1709741710&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:OFVZbtwB5rWnJgQldNA76WjcyPM=',
+  },
+];
+
+const settings = {
+  className: styles['slick-center'],
+  centerMode: true,
+  infinite: true,
+  centerPadding: '10px',
+  speed: 300,
+  dots: true,
+  focusOnSelect: true,
+  arrows: false,
+};
+
+function Carousel() {
+  const router = useRouter();
   const sliderRef = useRef(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [slidesToShow, setSlidesToShow] = useState(3);
-  const imageInfo = ['需求工程', '操作系统', '计算机网络'];
-  const imageUrls = [
-    'https://node2d-public.hep.com.cn/37197bc254b97d32e5a1743d1428c44e.jpg-small?e=1709741130&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:-ICrqml9NpE0GNWMuQ7aAU1e6lI=',
-    'https://node2d-public.hep.com.cn/bbd7693befd221e400c76cd30adb086d.jpg-small?e=1709742273&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:Zn62YEcqP-WMlsKOH3dbSqeVnvs=',
-    'https://node2d-public.hep.com.cn/0747dff8c1bf2f5d32531a6e5a9ec707.jpg-small?e=1709741710&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:OFVZbtwB5rWnJgQldNA76WjcyPM=',
-  ];
-  const settings = {
-    className: 'center',
-    centerMode: true,
-    infinite: true,
-    centerPadding: '10px',
-    slidesToShow: slidesToShow,
-    speed: 500,
-    dots: true,
-    arrows: false,
-  };
+
+  const imageInfo = useMemo(() => {
+    return imageInfoList[selectedImageIndex % imageInfoList.length];
+  }, [selectedImageIndex]);
 
   const { data: session } = useSession();
+
   useEffect(() => {
     const handleResize = () => {
       const screenWidth = window.innerWidth;
@@ -49,19 +67,6 @@ function Carousel({ setClicked, setSelectedImageInfo }) {
     };
   }, []);
 
-  const handleClick = (index) => {
-    if (index === selectedImageIndex) {
-      setSelectedImageIndex(null);
-      setSelectedImageInfo(null);
-    } else {
-      setSelectedImageIndex(index);
-      setSelectedImageInfo(imageInfo[index]);
-      sliderRef.current.slickGoTo(index - 1);
-      setClicked(true);
-      console.log('info===', imageInfo[index]);
-    }
-  };
-
   const handlePrev = () => {
     sliderRef.current.slickPrev();
   };
@@ -70,62 +75,79 @@ function Carousel({ setClicked, setSelectedImageInfo }) {
     sliderRef.current.slickNext();
   };
 
-  const handleImageClick = (index) => {
+  const handleImageClick = () => {
     if (!session) {
       signIn();
-    } else {
-      handleClick(index);
+      return;
     }
+    router.push('/chat/' + imageInfo.title);
   };
+  const { token } = theme.useToken();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.75 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <h1
+    <div className={styles.container}>
+      <Slider
+        ref={sliderRef}
+        {...settings}
+        slidesToShow={slidesToShow}
+        afterChange={(index) => setSelectedImageIndex(index)}
+      >
+        {[...imageInfoList, ...imageInfoList].map(({ url, title }, index) => {
+          return (
+            <div key={index}>
+              <div
+                key={index}
+                className={classnames(styles['slider-item'], {
+                  [styles.center]: selectedImageIndex === index,
+                })}
+              >
+                <img src={url} alt={`Image ${index + 1}`} />
+                <div
+                  style={{
+                    textAlign: 'center',
+                    color: token.colorText,
+                  }}
+                >
+                  {title}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </Slider>
+      {slidesToShow > 1 && (
+        <>
+          <div className={styles.leftArrow} onClick={handlePrev}>
+            <ArrowLeftOutlined
+              style={{ fontSize: '32px', color: token.colorText }}
+            />
+          </div>
+          <div className={styles.rightArrow} onClick={handleNext}>
+            <ArrowRightOutlined
+              style={{ fontSize: '32px', color: token.colorText }}
+            />
+          </div>
+        </>
+      )}
+      <div
         style={{
-          fontFamily: 'Impact, sans-serif',
-          color: 'darkred',
-          textTransform: 'uppercase',
-          textAlign: 'left',
-          fontSize: '4em',
-          paddingLeft: '8vw',
-          paddingBottom: '4vw',
-          fontWeight: 'bold',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '16px',
+          alignItems: 'center',
         }}
       >
-        Reading Helper
-      </h1>
-      <div className={styles.container}>
-        <Slider ref={sliderRef} {...settings}>
-          {imageUrls.map((url, index) => (
-            <div key={index} className={styles['slider-item']}>
-              <img
-                src={url}
-                alt={`Image ${index + 1}`}
-                className={`${
-                  selectedImageIndex === index ? styles.selected : ''
-                }`}
-                onClick={() => handleImageClick(index)}
-              />
-            </div>
-          ))}
-        </Slider>
-        {slidesToShow > 1 && (
-          <>
-            <div className={styles.leftArrow} onClick={handlePrev}>
-              <ArrowLeftOutlined style={{ fontSize: '32px' }} />
-            </div>
-            <div className={styles.rightArrow} onClick={handleNext}>
-              <ArrowRightOutlined style={{ fontSize: '32px' }} />
-            </div>
-          </>
-        )}
+        <Button
+          size="large"
+          type="primary"
+          onClick={() => {
+            handleImageClick();
+          }}
+        >
+          以《{imageInfo?.title}》开始对话
+        </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
