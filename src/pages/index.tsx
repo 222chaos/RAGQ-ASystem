@@ -1,48 +1,31 @@
-import React, { useState } from 'react';
-import { Button, notification } from 'antd';
+import React, { useState, useEffect } from 'react';
 import Carousel from './Carousel';
 import Prochat from './Prochat';
-import NotificationComponent from './Notification';
+import Notification from './Notification';
 import Login from './Login';
 import WelcomePage from './WelcomePage';
-
+import { useSession } from 'next-auth/react';
 const IndexPage = () => {
+  const { data: session } = useSession();
   const [click, setClick] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [selectedImageInfo, setSelectedImageInfo] = useState(null);
-
+  const [loggedIn, setLoggedIn] = useState(false);
+  useEffect(() => {
+    if (session) {
+      setLoggedIn(true);
+    }
+  }, [session]);
   return (
     <div>
-      {click && !clicked && (
+      <Notification />
+      {!clicked && (
         <>
           <Login />
-          <h1
-            style={{
-              fontFamily: 'Impact, sans-serif',
-              color: 'darkred',
-              textTransform: 'uppercase',
-              textAlign: 'left',
-              fontSize: '4em',
-              paddingLeft: '8vw',
-              fontWeight: 'bold',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-            }}
-          >
-            Reading Helper
-          </h1>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '70vh',
-            }}
-          >
-            <Carousel
-              setClicked={setClicked}
-              setSelectedImageInfo={setSelectedImageInfo}
-            />
-          </div>
+          <Carousel
+            setClicked={setClicked}
+            setSelectedImageInfo={setSelectedImageInfo}
+          />
         </>
       )}
       {clicked && (
@@ -52,7 +35,7 @@ const IndexPage = () => {
           setClick={undefined}
         />
       )}
-      {!click && !clicked && <WelcomePage setClick={setClick} />}
+      {!click && !clicked && !loggedIn && <WelcomePage setClick={setClick} />}
     </div>
   );
 };

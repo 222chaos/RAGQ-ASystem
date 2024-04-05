@@ -1,36 +1,28 @@
-import React, { useEffect } from 'react';
-import { SmileOutlined } from '@ant-design/icons';
-import { notification, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { notification, Divider } from 'antd';
+import { useSession } from 'next-auth/react';
 
-const App = () => {
+const Context = React.createContext({
+  name: 'Default',
+});
+
+const Notification = () => {
   const [api, contextHolder] = notification.useNotification();
-
-  const openNotification = () => {
-    api.open({
-      message: 'Notification Title',
-      description: 'This is the content of the notification.',
-      icon: (
-        <SmileOutlined
-          style={{
-            color: '#108ee9',
-          }}
-        />
-      ),
-    });
-  };
+  const { data: session } = useSession();
+  const [notificationShown, setNotificationShown] = useState(false);
 
   useEffect(() => {
-    openNotification();
-  }, []);
+    if (session && !notificationShown) {
+      api.success({
+        message: '登录成功',
+        description: `你好, ${session.user.name}!`,
+        placement: 'topRight',
+      });
+      setNotificationShown(true); // 标记通知已显示
+    }
+  }, [session, notificationShown, api]);
 
-  return (
-    <>
-      {contextHolder}
-      <Button type="primary" onClick={openNotification}>
-        Open the notification box
-      </Button>
-    </>
-  );
+  return <Context.Provider>{contextHolder}</Context.Provider>;
 };
 
-export default App;
+export default Notification;
