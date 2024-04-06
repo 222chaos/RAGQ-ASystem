@@ -1,23 +1,21 @@
-import { QdrantClient } from "@qdrant/js-client-rest";
-import fs from "fs";
+import { QdrantClient } from '@qdrant/js-client-rest';
+import fs from 'fs';
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
+  if (req.method === 'POST') {
     try {
-      const filePath = "src/pages/api/emjsjwl.txt";
-      const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      console.log("jsj.len:", content.length);
+      const filePath = 'src/pages/api/emjsjwl.txt';
+      const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      console.log('jsj.len:', content.length);
       const client = new QdrantClient({
         url: process.env.QDRANT_URL,
         apiKey: process.env.QDRANT_APIKEY,
       });
 
       const prepareData = async () => {
-        const collectionName = "jsjwl";
+        const collectionName = 'jsjwl';
         let result = await client.getCollections();
-        const collectionNames = result.collections.map(
-          (collection) => collection.name
-        );
+        const collectionNames = result.collections.map((collection) => collection.name);
         /*
         if (collectionNames.includes(collectionName)) {
           await client.deleteCollection(collectionName);
@@ -36,14 +34,14 @@ export default async function handler(req, res) {
 */
         result = await client.getCollections();
 
-        console.log("集合列表:", result.collections);
+        console.log('集合列表:', result.collections);
 
         let index = 1904;
         const points = [];
 
         for (let i = index; i < content.length; i++) {
           const item = content[i];
-          console.log("jsj", i);
+          console.log('jsj', i);
 
           points.push({
             id: i,
@@ -60,13 +58,13 @@ export default async function handler(req, res) {
       };
 
       await prepareData();
-      console.log("Data uploaded successfully");
-      res.status(200).json({ message: "Data uploaded successfully" });
+      console.log('Data uploaded successfully');
+      res.status(200).json({ message: 'Data uploaded successfully' });
     } catch (error) {
-      console.error("Error:", error.message);
-      res.status(500).json({ message: "Internal server error" });
+      console.error('Error:', error.message);
+      res.status(500).json({ message: 'Internal server error' });
     }
   } else {
-    res.status(405).json({ status: "Method not allowed" });
+    res.status(405).json({ status: 'Method not allowed' });
   }
 }

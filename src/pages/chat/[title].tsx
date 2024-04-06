@@ -1,11 +1,10 @@
 // use-client
 
 import { ProChat } from '@ant-design/pro-chat';
+import { Button, Result, Tag } from 'antd';
 import { useTheme } from 'antd-style';
 import { useParams, useRouter } from 'next/navigation';
-import React from 'react';
 import { imageInfoList } from '../Carousel';
-import { Badge, Button, Result, Space, Tag } from 'antd';
 
 export default function ChatPage() {
   const theme = useTheme();
@@ -16,9 +15,7 @@ export default function ChatPage() {
     return null;
   }
 
-  const selectedImageInfo = imageInfoList.find(
-    (imageInfo) => imageInfo.title === params.title,
-  );
+  const selectedImageInfo = imageInfoList.find((imageInfo) => imageInfo.title === params.title);
 
   if (!selectedImageInfo) {
     return (

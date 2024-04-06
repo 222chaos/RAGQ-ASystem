@@ -1,8 +1,6 @@
-import React from 'react';
-import { Button, ConfigProvider, Flex, Space, theme } from 'antd';
 import { GithubOutlined } from '@ant-design/icons';
+import { Button, ConfigProvider, Flex, Space, theme } from 'antd';
 import { useRouter } from 'next/navigation';
-
 const WelcomePage = () => {
   const { token } = theme.useToken();
   const router = useRouter();
@@ -67,10 +65,7 @@ const WelcomePage = () => {
             size="large"
             icon={<GithubOutlined />}
             onClick={() => {
-              window.open(
-                'https://github.com/microappteam/book-read-ai',
-                '_blank',
-              );
+              window.open('https://github.com/microappteam/book-read-ai', '_blank');
             }}
             style={{ margin: '0 auto' }}
           >

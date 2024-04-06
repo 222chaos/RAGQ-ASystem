@@ -1,7 +1,6 @@
-import '../styles/globals.css';
-import React from 'react';
-import { SessionProvider } from 'next-auth/react';
 import { ConfigProvider, theme } from 'antd';
+import { SessionProvider } from 'next-auth/react';
+import '../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
   return (

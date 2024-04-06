@@ -1,38 +1,38 @@
-import OpenAI from "openai";
-import { QdrantClient } from "@qdrant/js-client-rest";
+import { QdrantClient } from '@qdrant/js-client-rest';
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
 });
-console.log("process.env.PROXY_URL==", process.env.PROXY_URL);
+console.log('process.env.PROXY_URL==', process.env.PROXY_URL);
 export const config = {
-  runtime: "edge",
+  runtime: 'edge',
 };
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
+  if (req.method === 'POST') {
     try {
       const { query, selectedImageInfo } = await req.json();
 
-      let selectedInfo = "";
-      if (selectedImageInfo == "计算机网络") {
-        selectedInfo = "jsjwl";
+      let selectedInfo = '';
+      if (selectedImageInfo == '计算机网络') {
+        selectedInfo = 'jsjwl';
       }
-      if (selectedImageInfo == "需求工程") {
-        selectedInfo = "xqgc";
+      if (selectedImageInfo == '需求工程') {
+        selectedInfo = 'xqgc';
       }
-      if (selectedImageInfo == "操作系统") {
-        selectedInfo = "czxt";
+      if (selectedImageInfo == '操作系统') {
+        selectedInfo = 'czxt';
       }
       console.log(selectedImageInfo);
-      console.log("query=========", query[query.length - 1].content);
+      console.log('query=========', query[query.length - 1].content);
 
       //const rolePlayText = ` `;
 
       const embedding = await openai.embeddings.create({
-        model: "text-embedding-ada-002",
+        model: 'text-embedding-ada-002',
         input: query[query.length - 1].content,
-        encoding_format: "float",
+        encoding_format: 'float',
       });
       const embeddingData = embedding.data[0].embedding;
 
@@ -45,20 +45,20 @@ export default async function handler(req, res) {
         vector: embeddingData,
         limit: 2,
       });
-      console.log("search result: ", res1);
+      console.log('search result: ', res1);
       const contents = res1.map((item) => item.payload.content);
       console.log(contents);
       const encoder = new TextEncoder();
       const userMessages = query.map((query) => ({
-        role: "user",
+        role: 'user',
         content: query.content,
       }));
 
       const chatData = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: 'gpt-3.5-turbo',
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: `\n
 问题："""${query}"""
 可能的答案:"""${JSON.stringify(contents)}"""
@@ -79,9 +79,7 @@ export default async function handler(req, res) {
         async start(controller) {
           try {
             for await (const part of chatData) {
-              controller.enqueue(
-                encoder.encode(part.choices[0]?.delta?.content || "")
-              );
+              controller.enqueue(encoder.encode(part.choices[0]?.delta?.content || ''));
             }
             controller.close();
           } catch (e) {
@@ -92,21 +90,21 @@ export default async function handler(req, res) {
 
       return new Response(stream);
     } catch (error) {
-      console.log("errorrrrrrr===", error);
+      console.log('errorrrrrrr===', error);
       const res = new Response(
         JSON.stringify({
-          message: "Internal server error" + error.message,
+          message: 'Internal server error' + error.message,
         }),
         {
           status: 500,
-        }
+        },
       );
       return res;
     }
   } else {
     const res = new Response({
       status: 405,
-      statusText: "Method not allowed",
+      statusText: 'Method not allowed',
     });
     return res;
   }

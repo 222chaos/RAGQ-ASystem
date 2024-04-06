@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { notification, Divider } from 'antd';
+import { notification } from 'antd';
 import { useSession } from 'next-auth/react';
+import React, { useEffect, useState } from 'react';
 
 const Context = React.createContext({
   name: 'Default',

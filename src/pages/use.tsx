@@ -1,7 +1,6 @@
-import React from 'react';
+import { ConfigProvider, theme } from 'antd';
 import Carousel from './Carousel';
 import Login from './Login';
-import { ConfigProvider, theme } from 'antd';
 
 const IndexPage = () => {
   return (

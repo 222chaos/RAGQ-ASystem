@@ -1,18 +1,18 @@
-import OpenAI from "openai";
-import { v4 as uuidv4 } from "uuid";
+import OpenAI from 'openai';
+import { v4 as uuidv4 } from 'uuid';
 
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
   base: process.env.PROXY_URL,
 });
-console.log("process.env.PROXY_URL==", process.env.PROXY_URL);
+console.log('process.env.PROXY_URL==', process.env.PROXY_URL);
 export const config = {
-  runtime: "edge",
+  runtime: 'edge',
 };
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
-    console.log("api");
+  if (req.method === 'POST') {
+    console.log('api');
     try {
       const { query } = await req.json();
       console.log(query);
@@ -21,15 +21,15 @@ export default async function handler(req, res) {
 
       const encoder = new TextEncoder();
       const userMessages = query.map((message) => ({
-        role: "user",
+        role: 'user',
         content: message.content,
       }));
 
       const chatData = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: 'gpt-3.5-turbo',
         messages: [
-          { role: "system", content: rolePlayText },
-          { role: "user", content: `UserId: ${userId}` },
+          { role: 'system', content: rolePlayText },
+          { role: 'user', content: `UserId: ${userId}` },
           ...userMessages,
         ],
         temperature: 1,
@@ -41,9 +41,7 @@ export default async function handler(req, res) {
         async start(controller) {
           try {
             for await (const part of chatData) {
-              controller.enqueue(
-                encoder.encode(part.choices[0]?.delta?.content || "")
-              );
+              controller.enqueue(encoder.encode(part.choices[0]?.delta?.content || ''));
             }
             controller.close();
           } catch (e) {
@@ -54,21 +52,21 @@ export default async function handler(req, res) {
 
       return new Response(stream);
     } catch (error) {
-      console.log("errorrrrrrr===", error);
+      console.log('errorrrrrrr===', error);
       const res = new Response(
         JSON.stringify({
-          message: "Internal server error" + error.message,
+          message: 'Internal server error' + error.message,
         }),
         {
           status: 500,
-        }
+        },
       );
       return res;
     }
   } else {
     const res = new Response({
       status: 405,
-      statusText: "Method not allowed",
+      statusText: 'Method not allowed',
     });
     return res;
   }

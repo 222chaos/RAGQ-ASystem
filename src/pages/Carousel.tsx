@@ -1,13 +1,13 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import styles from './Carousel.module.css';
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
-import { useSession, signIn } from 'next-auth/react';
-import { Button, message, theme } from 'antd';
+import { Button, theme } from 'antd';
 import classnames from 'classnames';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick-theme.css';
+import 'slick-carousel/slick/slick.css';
+import styles from './Carousel.module.css';
 
 export const imageInfoList = [
   {
@@ -118,14 +118,10 @@ function Carousel() {
       {slidesToShow > 1 && (
         <>
           <div className={styles.leftArrow} onClick={handlePrev}>
-            <ArrowLeftOutlined
-              style={{ fontSize: '32px', color: token.colorText }}
-            />
+            <ArrowLeftOutlined style={{ fontSize: '32px', color: token.colorText }} />
           </div>
           <div className={styles.rightArrow} onClick={handleNext}>
-            <ArrowRightOutlined
-              style={{ fontSize: '32px', color: token.colorText }}
-            />
+            <ArrowRightOutlined style={{ fontSize: '32px', color: token.colorText }} />
           </div>
         </>
       )}
