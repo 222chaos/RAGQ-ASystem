@@ -1,5 +1,6 @@
 import { ConfigProvider, theme } from 'antd';
 import { SessionProvider } from 'next-auth/react';
+import Head from 'next/head';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
@@ -14,7 +15,10 @@ export default function App({ Component, pageProps }) {
     >
       <SessionProvider session={pageProps.session}>
         <Component {...pageProps} />
-      </SessionProvider>{' '}
+      </SessionProvider>
+      <Head>
+        <title> 帮你读</title>
+      </Head>
     </ConfigProvider>
   );
 }

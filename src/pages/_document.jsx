@@ -5,7 +5,6 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <title> 帮你读</title>
           <link rel="icon" href="/logo.png" />
           <meta property="og:title" content="" />
           <meta property="twitter:image" content="/logo.png" />
