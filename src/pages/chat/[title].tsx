@@ -5,7 +5,6 @@ import { Button, Result, Tag } from 'antd';
 import { useTheme } from 'antd-style';
 import { useParams, useRouter } from 'next/navigation';
 import { imageInfoList } from '../Carousel';
-
 export default function ChatPage() {
   const theme = useTheme();
   const params = useParams();
