@@ -71,6 +71,7 @@ export default function ChatPage() {
             query: messages,
             selectedImageInfo: selectedImageInfo.title,
           };
+          console.log('message===', messages);
           const response = await fetch('/api/query', {
             method: 'POST',
             body: JSON.stringify(requestBody),

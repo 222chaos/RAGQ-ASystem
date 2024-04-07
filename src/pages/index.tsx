@@ -75,7 +75,7 @@ const WelcomePage = () => {
               }}
               style={{ margin: '0 auto' }}
             >
-              GITHUB
+              GitHub
             </Button>
           </Space>
         </Flex>

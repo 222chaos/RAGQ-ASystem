@@ -25,13 +25,11 @@ export default async function handler(req, res) {
         selectedInfo = 'czxt';
       }
       console.log(selectedImageInfo);
-      console.log('query=========', query[query.length - 1].content);
-
-      //const rolePlayText = ` `;
+      console.log('query0=========', query[0].content);
 
       const embedding = await openai.embeddings.create({
         model: 'text-embedding-ada-002',
-        input: query[query.length - 1].content,
+        input: query[0].content,
         encoding_format: 'float',
       });
       const embeddingData = embedding.data[0].embedding;
@@ -45,7 +43,6 @@ export default async function handler(req, res) {
         vector: embeddingData,
         limit: 2,
       });
-      console.log('search result: ', res1);
       const contents = res1.map((item) => item.payload.content);
       console.log(contents);
       const encoder = new TextEncoder();
