@@ -13,7 +13,7 @@ class MyDocument extends Document {
 
     // Get static styles of the page one by one
     const styles = extractStaticStyle(page.html).map((item) => item.style);
-
+    console.log('Static styles extracted:', styles);
     const initialProps = await Document.getInitialProps(ctx);
 
     return {
@@ -30,6 +30,7 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
+          {this.props.styles}
           <link rel="icon" href="/logo.png" />
           <meta property="og:title" content="" />
           <meta property="twitter:image" content="/logo.png" />
