@@ -5,14 +5,13 @@ const openai = new OpenAI({
   apiKey: process.env.API_KEY,
   base: process.env.PROXY_URL,
 });
-console.log('process.env.PROXY_URL==', process.env.PROXY_URL);
+
 export const config = {
   runtime: 'edge',
 };
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    console.log('api');
     try {
       const { query } = await req.json();
       console.log(query);
@@ -52,7 +51,6 @@ export default async function handler(req, res) {
 
       return new Response(stream);
     } catch (error) {
-      console.log('errorrrrrrr===', error);
       const res = new Response(
         JSON.stringify({
           message: 'Internal server error' + error.message,
