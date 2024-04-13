@@ -1,3 +1,4 @@
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -20,7 +21,7 @@ export default function Component() {
 
   const handleSignOut = () => {
     signOut();
-    setNotificationShown(false); // Reset notification state on sign out
+    setNotificationShown(false);
     sessionStorage.removeItem('notificationShown');
   };
 
@@ -53,7 +54,10 @@ function AuthComponent({ session, notificationShown, setNotificationShown, handl
   if (session) {
     return (
       <>
-        <Button onClick={handleSignOut}>Sign out</Button>&nbsp;&nbsp;&nbsp;
+        <Button icon={<LogoutOutlined />} onClick={handleSignOut}>
+          Sign out
+        </Button>
+        &nbsp;&nbsp;&nbsp;
         {notificationShown && <Notification />}
       </>
     );
@@ -61,7 +65,9 @@ function AuthComponent({ session, notificationShown, setNotificationShown, handl
 
   return (
     <>
-      <Button onClick={handleSignIn}>Sign in</Button>
+      <Button icon={<UserOutlined />} onClick={handleSignIn}>
+        Sign in
+      </Button>
       &nbsp;&nbsp;&nbsp;
     </>
   );
