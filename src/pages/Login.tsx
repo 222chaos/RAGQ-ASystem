@@ -55,7 +55,7 @@ function AuthComponent({ session, notificationShown, setNotificationShown, handl
     return (
       <>
         <Button icon={<LogoutOutlined />} onClick={handleSignOut}>
-          Sign out
+          退出
         </Button>
         &nbsp;&nbsp;&nbsp;
         {notificationShown && <Notification />}
@@ -66,7 +66,7 @@ function AuthComponent({ session, notificationShown, setNotificationShown, handl
   return (
     <>
       <Button icon={<UserOutlined />} onClick={handleSignIn}>
-        Sign in
+        登录
       </Button>
       &nbsp;&nbsp;&nbsp;
     </>
