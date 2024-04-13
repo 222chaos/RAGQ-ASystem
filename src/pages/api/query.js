@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
 });
-console.log('process.env.PROXY_URL==', process.env.PROXY_URL);
+
 export const config = {
   runtime: 'edge',
 };
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       console.log(selectedImageInfo);
       console.log('问题：', query.at(-1).content);
 
-      console.log('可能的答案', contents);
+      console.log('可能的答案：', contents);
       const encoder = new TextEncoder();
       const userMessages = query.map((query) => ({
         role: 'user',
@@ -78,7 +78,6 @@ export default async function handler(req, res) {
         async start(controller) {
           try {
             for await (const part of chatData) {
-              console.log(part.choices[0]?.delta?.content);
               controller.enqueue(encoder.encode(part.choices[0]?.delta?.content || ''));
             }
             controller.close();
