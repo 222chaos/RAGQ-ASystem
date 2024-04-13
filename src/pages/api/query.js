@@ -42,11 +42,11 @@ export default async function handler(req, res) {
         limit: 1,
       });
       const contents = res1.map((item) => item.payload.content);
-
+      /*
       console.log(selectedImageInfo);
       console.log('问题：', query.at(-1).content);
-
       console.log('可能的答案：', contents);
+      */
       const encoder = new TextEncoder();
       const userMessages = query.map((query) => ({
         role: 'user',
