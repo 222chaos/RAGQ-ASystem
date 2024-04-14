@@ -12,7 +12,7 @@
   "dependencies": {
     "@ant-design/cssinjs": "^1.19.1",
     "@ant-design/icons": "^5.3.6",
-    "@ant-design/pro-chat": "^2.0.9",
+    "@ant-design/pro-chat": "^2.0.10",
     "@qdrant/js-client-rest": "^1.8.2",
     "antd": "^5.16.1",
     "antd-style": "^3.6.2",
