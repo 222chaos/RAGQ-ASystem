@@ -2,9 +2,10 @@ import { ConfigProvider, theme } from 'antd';
 import { motion } from 'framer-motion';
 import Carousel from './Carousel';
 import Login from './Login';
+import Transition from './Transiton';
 const IndexPage = () => {
   return (
-    <>
+    <Transition>
       <Login />
       <motion.div
         initial={{ opacity: 0, scale: 0.75 }}
@@ -37,7 +38,7 @@ const IndexPage = () => {
           <Carousel />
         </div>
       </motion.div>
-    </>
+    </Transition>
   );
 };
 

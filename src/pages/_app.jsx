@@ -1,4 +1,5 @@
 import { ConfigProvider, theme } from 'antd';
+import { AnimatePresence } from 'framer-motion';
 import { SessionProvider } from 'next-auth/react';
 import '../styles/globals.css';
 
@@ -13,7 +14,9 @@ export default function App({ Component, pageProps }) {
       }}
     >
       <SessionProvider session={pageProps.session}>
-        <Component {...pageProps} />
+        <AnimatePresence>
+          <Component {...pageProps} />
+        </AnimatePresence>
       </SessionProvider>
     </ConfigProvider>
   );

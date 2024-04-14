@@ -8,6 +8,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick-theme.css';
 import 'slick-carousel/slick/slick.css';
 import styles from './Carousel.module.css';
+import Transition from './Transiton';
 
 export const imageInfoList = [
   {
@@ -85,65 +86,67 @@ function Carousel() {
   const { token } = theme.useToken();
 
   return (
-    <div className={styles.container}>
-      <Slider
-        ref={sliderRef}
-        {...settings}
-        slidesToShow={slidesToShow}
-        afterChange={(index) => setSelectedImageIndex(index)}
-      >
-        {[...imageInfoList, ...imageInfoList].map(({ url, title }, index) => {
-          return (
-            <div key={index}>
-              <div
-                key={index}
-                className={classnames(styles['slider-item'], {
-                  [styles.center]: selectedImageIndex === index,
-                })}
-              >
-                <img src={url} alt={`Image ${index + 1}`} />
+    <Transition>
+      <div className={styles.container}>
+        <Slider
+          ref={sliderRef}
+          {...settings}
+          slidesToShow={slidesToShow}
+          afterChange={(index) => setSelectedImageIndex(index)}
+        >
+          {[...imageInfoList, ...imageInfoList].map(({ url, title }, index) => {
+            return (
+              <div key={index}>
                 <div
-                  style={{
-                    textAlign: 'center',
-                    color: token.colorText,
-                  }}
+                  key={index}
+                  className={classnames(styles['slider-item'], {
+                    [styles.center]: selectedImageIndex === index,
+                  })}
                 >
-                  {title}
+                  <img src={url} alt={`Image ${index + 1}`} />
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      color: token.colorText,
+                    }}
+                  >
+                    {title}
+                  </div>
                 </div>
               </div>
+            );
+          })}
+        </Slider>
+        {slidesToShow > 1 && (
+          <>
+            <div className={styles.leftArrow} onClick={handlePrev}>
+              <ArrowLeftOutlined style={{ fontSize: '32px', color: token.colorText }} />
             </div>
-          );
-        })}
-      </Slider>
-      {slidesToShow > 1 && (
-        <>
-          <div className={styles.leftArrow} onClick={handlePrev}>
-            <ArrowLeftOutlined style={{ fontSize: '32px', color: token.colorText }} />
-          </div>
-          <div className={styles.rightArrow} onClick={handleNext}>
-            <ArrowRightOutlined style={{ fontSize: '32px', color: token.colorText }} />
-          </div>
-        </>
-      )}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginTop: '16px',
-          alignItems: 'center',
-        }}
-      >
-        <Button
-          size="large"
-          type="primary"
-          onClick={() => {
-            handleImageClick();
+            <div className={styles.rightArrow} onClick={handleNext}>
+              <ArrowRightOutlined style={{ fontSize: '32px', color: token.colorText }} />
+            </div>
+          </>
+        )}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '16px',
+            alignItems: 'center',
           }}
         >
-          以《{imageInfo?.title}》开始对话
-        </Button>
+          <Button
+            size="large"
+            type="primary"
+            onClick={() => {
+              handleImageClick();
+            }}
+          >
+            以《{imageInfo?.title}》开始对话
+          </Button>
+        </div>
       </div>
-    </div>
+    </Transition>
   );
 }
 
