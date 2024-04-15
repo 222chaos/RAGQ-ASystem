@@ -65,6 +65,11 @@ export default function ChatPage() {
               重新选择科目
             </Button>
           )}
+          chatItemRenderConfig={
+            {
+              // actionsRender: () => <Tag>重新选择科目</Tag>,
+            }
+          }
           helloMessage={`欢迎使用帮你读，你将要查询的科目是 ${selectedImageInfo.title} ，请输入需要查询的内容。`}
           sendMessageRequest={async (messages) => {
             const requestBody = {
