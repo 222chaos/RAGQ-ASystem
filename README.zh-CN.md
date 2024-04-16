@@ -35,6 +35,8 @@ English · [简体中文](./README.zh-CN.md) · [Report Bug][github-issues-link]
 
 - 使用Next.js作为脚手架。
 
+<br/>访问 https://nextjs.org/docs 查看完整文档。
+
 - 通过 text-embedding-ada-002 矢量化文档。
 
 ```jsx
@@ -49,9 +51,13 @@ await openai.embeddings.create({
 
   > \[!NOTE]
   >
-  > ProChat 专注于快速搭建起大语言模型 Chat 对话框架。它旨在赋予开发人员轻松打造丰富、动态和直观的聊天界面的能力。 [![](https://next.ossinsight.io/widgets/official/compose-activity-trends/thumbnail.png?repo_id=707504998&image_size=auto&color_scheme=dark)](https://next.ossinsight.io/widgets/official/compose-activity-trends?repo_id=707504998)
+  > ProChat 专注于快速搭建起大语言模型 Chat 对话框架。它旨在赋予开发人员轻松打造丰富、动态和直观的聊天界面的能力。
 
-- 使用Qdrant进行数据存储 <img height="100" src="https://github.com/qdrant/qdrant/raw/master/docs/logo.svg" alt="Qdrant">
+  [![](https://next.ossinsight.io/widgets/official/compose-activity-trends/thumbnail.png?repo_id=707504998&image_size=auto&color_scheme=dark)](https://next.ossinsight.io/widgets/official/compose-activity-trends?repo_id=707504998)
+
+- 使用Qdrant进行数据存储
+
+<br/> <img height="100" src="https://github.com/qdrant/qdrant/raw/master/docs/logo.svg" alt="Qdrant">
 
 <br/>
 
@@ -67,6 +73,6 @@ await openai.embeddings.create({
 | Edge | 最近 2 个版本 | 最近 2 个版本 | 最近 2 个版本 | 最近 2 个版本 |
 
 <br/>
-
+[ant-design-shield]: https://img.shields.io/badge/-Ant%20Design-1677FF?labelColor=black&logo=antdesign&style=flat-square
 [ant-design-link]: https://ant.design
 [github-issues-link]: https://github.com/microappteam/book-read-ai/issues

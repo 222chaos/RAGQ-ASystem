@@ -35,6 +35,8 @@ Reading Helper is a RAG application that uses search enhancement generation tech
 
 - Build with Next.js.
 
+  <br/>Visit https://nextjs.org/docs to view the full documentation.
+
 - Vectorize documents by text-embedding-ada-002.
 
 ```jsx
@@ -52,7 +54,9 @@ await openai.embeddings.create({
 
 [![](https://next.ossinsight.io/widgets/official/compose-activity-trends/thumbnail.png?repo_id=707504998&image_size=auto&color_scheme=dark)](https://next.ossinsight.io/widgets/official/compose-activity-trends?repo_id=707504998)
 
-- Store data with Qdrant <img height="100" src="https://github.com/qdrant/qdrant/raw/master/docs/logo.svg" alt="Qdrant">
+- Store data with Qdrant
+
+<br/> <img height="100" src="https://github.com/qdrant/qdrant/raw/master/docs/logo.svg" alt="Qdrant">
 
 <br/>
 
@@ -68,6 +72,6 @@ await openai.embeddings.create({
 | Edge | last 2 versions | last 2 versions | last 2 versions | last 2 versions |
 
 <br/>
-
+[ant-design-shield]: https://img.shields.io/badge/-Ant%20Design-1677FF?labelColor=black&logo=antdesign&style=flat-square
 [ant-design-link]: https://ant.design
 [github-issues-link]: https://github.com/microappteam/book-read-ai/issues
