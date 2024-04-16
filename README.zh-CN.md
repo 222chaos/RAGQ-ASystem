@@ -35,7 +35,7 @@
 
 - 使用Next.js作为脚手架。
 
-<br/>访问 https://nextjs.org/docs 查看完整文档。
+<br/><img src="https://www.arkasoftwares.com/blog/wp-content/uploads/2020/09/Next-JS.jpg">
 
 <br/>
 
