@@ -6,7 +6,7 @@
 
 基于 AI 大模型与向量数据库的文档查询工具
 
-[English](./README.md) · [简体中文] · [Report Bug][github-issues-link] · [Request Feature][github-issues-link]
+[English](./README.md) · 简体中文 · [Report Bug][github-issues-link] · [Request Feature][github-issues-link]
 
 [![][ant-design-shield]][ant-design-link]
 
