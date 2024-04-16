@@ -35,7 +35,7 @@ Reading Helper is a RAG application that uses search enhancement generation tech
 
 - Build with Next.js.
 
-  <br/>Visit https://nextjs.org/docs to view the full documentation.
+  <br/><img src="https://www.arkasoftwares.com/blog/wp-content/uploads/2020/09/Next-JS.jpg">
 
   <br/>
 
