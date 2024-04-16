@@ -50,9 +50,8 @@ await openai.embeddings.create({
 ```
 
 - Use Chat Components like Pro!🤖
-  > \[!NOTE]
-  >
-  > ProChat focuses on quickly setting up a large language model chat dialogue framework. It aims to empower developers to easily create rich, dynamic, and intuitive chat interfaces.
+
+ProChat focuses on quickly setting up a large language model chat dialogue framework. It aims to empower developers to easily create rich, dynamic, and intuitive chat interfaces.
 
 ![](https://gw.alipayobjects.com/zos/kitchen/Aa%2452FxhWU/pro-chat.webp)
 

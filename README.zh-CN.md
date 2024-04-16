@@ -6,7 +6,7 @@
 
 基于 AI 大模型与向量数据库的文档查询工具
 
-English · [简体中文](./README.zh-CN.md) · [Report Bug][github-issues-link] · [Request Feature][github-issues-link]
+[English](./README.md) · [简体中文] · [Report Bug][github-issues-link] · [Request Feature][github-issues-link]
 
 [![][ant-design-shield]][ant-design-link]
 
@@ -51,9 +51,7 @@ await openai.embeddings.create({
 
 - 使用 ProChat 组件🤖
 
-  > \[!NOTE]
-  >
-  > ProChat 专注于快速搭建起大语言模型 Chat 对话框架。它旨在赋予开发人员轻松打造丰富、动态和直观的聊天界面的能力。
+ProChat 专注于快速搭建起大语言模型 Chat 对话框架。它旨在赋予开发人员轻松打造丰富、动态和直观的聊天界面的能力。
 
 ![](https://gw.alipayobjects.com/zos/kitchen/Aa%2452FxhWU/pro-chat.webp)
 
