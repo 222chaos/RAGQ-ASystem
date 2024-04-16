@@ -37,6 +37,8 @@ Reading Helper is a RAG application that uses search enhancement generation tech
 
   <br/>Visit https://nextjs.org/docs to view the full documentation.
 
+  <br/>
+
 - Vectorize documents by text-embedding-ada-002.
 
 ```jsx
@@ -52,7 +54,9 @@ await openai.embeddings.create({
   >
   > ProChat focuses on quickly setting up a large language model chat dialogue framework. It aims to empower developers to easily create rich, dynamic, and intuitive chat interfaces.
 
-[![](https://next.ossinsight.io/widgets/official/compose-activity-trends/thumbnail.png?repo_id=707504998&image_size=auto&color_scheme=dark)](https://next.ossinsight.io/widgets/official/compose-activity-trends?repo_id=707504998)
+![](https://gw.alipayobjects.com/zos/kitchen/Aa%2452FxhWU/pro-chat.webp)
+
+<br/>
 
 - Store data with Qdrant
 
@@ -72,6 +76,9 @@ await openai.embeddings.create({
 | Edge | last 2 versions | last 2 versions | last 2 versions | last 2 versions |
 
 <br/>
+
+<!-- 链接组 -->
+
 [ant-design-shield]: https://img.shields.io/badge/-Ant%20Design-1677FF?labelColor=black&logo=antdesign&style=flat-square
 [ant-design-link]: https://ant.design
 [github-issues-link]: https://github.com/microappteam/book-read-ai/issues
