@@ -1,8 +1,31 @@
+:root {
+  --primary-color: rgb(235, 47, 150);
+  --background-color: rgb(5, 6, 8);
+  --text-color: rgb(255, 255, 255);
+  --arrow-background-color: rgb(235, 47, 150);
+  --blur-ball-gradient-start: rgb(114, 46, 209);
+  --blur-ball-gradient-end: rgb(19, 194, 194);
+  --action-button-gradient-start: rgb(22, 119, 255);
+  --action-button-gradient-end: rgb(235, 47, 150);
+}
+
+[data-theme='light'] {
+  --primary-color: rgb(235, 47, 150);
+  --background-color: rgb(255, 255, 255);
+  --text-color: rgb(5, 6, 8);
+  --arrow-background-color: rgb(22, 119, 255);
+  --blur-ball-gradient-start: rgb(255, 179, 71);
+  --blur-ball-gradient-end: rgb(132, 250, 176);
+  --action-button-gradient-start: rgb(240, 98, 146);
+  --action-button-gradient-end: rgb(123, 31, 162);
+}
+
 body,
 html {
   margin: 0;
   padding: 0;
-  background-color: rgb(5, 6, 8);
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .heroBlurBall {
@@ -17,28 +40,25 @@ html {
   opacity: 0.2;
   filter: blur(69px);
   will-change: transform;
-  animation-timeline: auto;
-  animation-range-start: normal;
-  animation-range-end: normal;
   background: linear-gradient(
-      135deg,
-      rgb(114, 46, 209) 0%,
-      rgb(22, 119, 255) 30%,
-      rgb(245, 34, 45) 70%,
-      rgb(19, 194, 194) 100%
-    )
-    0% 0% / 200% 200%;
+    135deg,
+    var(--blur-ball-gradient-start) 0%,
+    rgb(22, 119, 255) 30%,
+    rgb(245, 34, 45) 70%,
+    var(--blur-ball-gradient-end) 100%
+  );
   animation: 10s ease 0s infinite normal none running glow;
 }
 
 .actionButton {
-  animation-timeline: auto;
-  animation-range-start: normal;
-  animation-range-end: normal;
   border-width: initial;
   border-style: none;
   border-color: initial;
   border-image: initial;
-  background: linear-gradient(90deg, rgb(22, 119, 255) 0%, rgb(235, 47, 150) 100%) 0% 0% / 200% 100%;
+  background: linear-gradient(
+    90deg,
+    var(--action-button-gradient-start) 0%,
+    var(--action-button-gradient-end) 100%
+  );
   animation: 5s ease 0s infinite normal none running flow;
 }

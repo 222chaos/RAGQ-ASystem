@@ -1,9 +1,9 @@
 import { ProChat } from '@ant-design/pro-chat';
-import { Button, Result } from 'antd';
+import { Button } from 'antd';
 import { useTheme } from 'antd-style';
 import { useParams, useRouter } from 'next/navigation';
 import { imageInfoList } from '../Carousel';
-import Transition from '../Transiton';
+import Transition from '../Transition';
 export default function ChatPage() {
   const theme = useTheme();
   const params = useParams();
@@ -15,23 +15,6 @@ export default function ChatPage() {
 
   const selectedImageInfo = imageInfoList.find((imageInfo) => imageInfo.title === params.title);
 
-  if (!selectedImageInfo) {
-    return (
-      <Transition>
-        <Result
-          status="404"
-          title="404"
-          subTitle="未找到页面"
-          extra={
-            <Button type="primary" onClick={() => router.push('/')}>
-              返回主页
-            </Button>
-          }
-        />
-      </Transition>
-    );
-  }
-
   return (
     <Transition>
       <div
@@ -41,7 +24,7 @@ export default function ChatPage() {
       >
         <ProChat
           style={{
-            height: '97vh',
+            height: '99vh',
             width: '98vw',
           }}
           styles={{

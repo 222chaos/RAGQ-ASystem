@@ -8,7 +8,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick-theme.css';
 import 'slick-carousel/slick/slick.css';
 import styles from './Carousel.module.css';
-import Transition from './Transiton';
+import Transition from './Transition';
 
 export const imageInfoList = [
   {
@@ -31,7 +31,7 @@ const settings = {
   infinite: true,
   centerPadding: '10px',
   speed: 300,
-  dots: true,
+  dots: false,
   focusOnSelect: true,
   arrows: false,
 };
