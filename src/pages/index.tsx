@@ -75,7 +75,7 @@ const WelcomePage = () => {
                   }}
                   className="actionButton"
                   size="large"
-                  style={{ margin: '0 auto' }}
+                  style={{ margin: '0 auto', backgroundColor: 'var(--primary-color)' }}
                 >
                   立即体验 →
                 </Button>
