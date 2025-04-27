@@ -1,9 +1,17 @@
 import { LockOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Form, Input, Modal, Space, Upload, message } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 const { TextArea } = Input;
+
+interface UserInfo {
+  id: string;
+  username: string;
+  type: 'student' | 'teacher';
+  avatarUrl: string | null;
+  createdAt: string;
+}
 
 export default function ProfilePage() {
   const [form] = Form.useForm();
@@ -12,14 +20,65 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [passwordForm] = Form.useForm();
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('/api/profile/user', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '获取用户信息失败');
+        }
+
+        const data = await response.json();
+
+        // 设置头像
+        if (data.avatarUrl) {
+          setAvatarUrl(data.avatarUrl);
+          localStorage.setItem('avatarUrl', data.avatarUrl);
+        }
+
+        // 设置表单初始值
+        form.setFieldsValue({
+          username: data.username,
+        });
+
+        setUserInfo(data);
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        message.error({
+          content: error instanceof Error ? error.message : '获取用户信息失败',
+          duration: 2,
+          className: styles.errorMessage,
+        });
+      }
+    };
+
+    fetchUserInfo();
+  }, [form]);
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
       // TODO: 调用更新个人信息的API
-      message.success('个人信息更新成功');
+      message.success({
+        content: '个人信息更新成功',
+        duration: 2,
+        className: styles.successMessage,
+      });
     } catch (error) {
-      message.error('更新失败，请重试');
+      message.error({
+        content: '更新失败，请重试',
+        duration: 2,
+        className: styles.errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -29,43 +88,21 @@ export default function ProfilePage() {
     try {
       setLoading(true);
       // TODO: 调用修改密码的API
-      message.success('密码修改成功');
+      message.success({
+        content: '密码修改成功',
+        duration: 2,
+        className: styles.successMessage,
+      });
       setPasswordModalVisible(false);
       passwordForm.resetFields();
     } catch (error) {
-      message.error('密码修改失败，请重试');
+      message.error({
+        content: '密码修改失败，请重试',
+        duration: 2,
+        className: styles.errorMessage,
+      });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAvatarChange = async (info) => {
-    if (info.file.status === 'uploading') {
-      setUploading(true);
-      return;
-    }
-
-    if (info.file.status === 'done') {
-      try {
-        // 这里应该替换为实际的上传API调用
-        // const response = await uploadAvatar(info.file.originFileObj);
-        // setAvatarUrl(response.url);
-
-        // 临时使用本地预览
-        const url = URL.createObjectURL(info.file.originFileObj);
-        setAvatarUrl(url);
-
-        // 保存到localStorage
-        localStorage.setItem('avatarUrl', url);
-      } catch (error) {
-        console.error('头像上传失败:', error);
-      } finally {
-        setUploading(false);
-      }
-    }
-
-    if (info.file.status === 'error') {
-      setUploading(false);
     }
   };
 
@@ -85,21 +122,63 @@ export default function ProfilePage() {
         throw new Error('图片大小不能超过 2MB!');
       }
 
-      // 创建预览URL
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
+      // 将文件转换为 Base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64Url = reader.result as string;
 
-      // 保存到localStorage
-      localStorage.setItem('avatarUrl', url);
+        try {
+          // 调用 API 更新数据库中的头像 URL
+          const response = await fetch('/api/profile/avatar', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ avatarUrl: base64Url }),
+          });
 
-      // 模拟上传成功
-      onSuccess('ok');
-      message.success('头像上传成功');
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || '上传失败');
+          }
+
+          const data = await response.json();
+          setAvatarUrl(data.avatarUrl);
+          localStorage.setItem('avatarUrl', data.avatarUrl);
+
+          message.success({
+            content: '头像上传成功',
+            duration: 2,
+            className: styles.successMessage,
+          });
+
+          onSuccess('ok');
+        } catch (error) {
+          onError(error);
+          message.error({
+            content: error instanceof Error ? error.message : '上传失败',
+            duration: 2,
+            className: styles.errorMessage,
+          });
+        }
+      };
+
+      reader.onerror = (error) => {
+        onError(error);
+        message.error({
+          content: '文件读取失败',
+          duration: 2,
+          className: styles.errorMessage,
+        });
+      };
     } catch (error) {
       onError(error);
-      message.error(error.message);
-    } finally {
-      setUploading(false);
+      message.error({
+        content: error instanceof Error ? error.message : '上传失败',
+        duration: 2,
+        className: styles.errorMessage,
+      });
     }
   };
 
@@ -113,7 +192,6 @@ export default function ProfilePage() {
             listType="picture"
             showUploadList={false}
             customRequest={customUpload}
-            onChange={handleAvatarChange}
             disabled={uploading}
           >
             <Button icon={<UploadOutlined />} className={styles.uploadButton} loading={uploading}>
@@ -156,6 +234,7 @@ export default function ProfilePage() {
           passwordForm.resetFields();
         }}
         footer={null}
+        className={styles.modal}
       >
         <Form form={passwordForm} layout="vertical" onFinish={handlePasswordSubmit}>
           <Form.Item

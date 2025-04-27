@@ -3,7 +3,6 @@
   min-width: 400px;
   max-width: 80vw;
   margin: 0 auto;
-
   border-radius: 20px;
 }
 
@@ -14,13 +13,13 @@
   width: 80%;
   padding: 42px;
 }
+
 .center img {
   transform: translateY(-20px) scale(1.12);
 }
 
 .slider-item:hover {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-
   background-color: rgba(235, 47, 150, 0.1);
 }
 
@@ -29,7 +28,6 @@
   width: 250px;
   transition: transform 0.3s ease;
   height: 320px;
-
   margin: auto;
   text-align: center;
 }

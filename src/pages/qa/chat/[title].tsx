@@ -2,8 +2,8 @@ import { ProChat } from '@ant-design/pro-chat';
 import { Button } from 'antd';
 import { useTheme } from 'antd-style';
 import { useParams, useRouter } from 'next/navigation';
+import Transition from '../../Transition';
 import { imageInfoList } from '../Carousel';
-import Transition from '../Transition';
 
 export default function ChatPage() {
   const theme = useTheme();

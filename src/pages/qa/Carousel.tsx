@@ -7,8 +7,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick-theme.css';
 import 'slick-carousel/slick/slick.css';
+import Transition from '../Transition';
 import styles from './Carousel.module.css';
-import Transition from './Transition';
 
 export const imageInfoList = [
   {
@@ -81,7 +81,7 @@ function Carousel() {
       signIn();
       return;
     }
-    router.push('/chat/' + imageInfo.title);
+    router.push('/qa/chat/' + imageInfo.title);
   };
   const { token } = theme.useToken();
 
