@@ -4,42 +4,45 @@ import { Button, ConfigProvider, theme } from 'antd';
 import { AnimatePresence } from 'framer-motion';
 import { SessionProvider } from 'next-auth/react';
 import { createContext, useEffect, useState } from 'react';
+import ProLayout from '../components/Layout';
 import '../styles/globals.css';
 
 export const ThemeContext = createContext();
 
 export default function App({ Component, pageProps }) {
-  const [themeMode, setThemeMode] = useState('dark');
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', themeMode);
-  }, [themeMode]);
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   return (
-    <ThemeContext.Provider value={{ themeMode, setThemeMode }}>
+    <ThemeContext.Provider value={{ isDark, setIsDark }}>
       <ConfigProvider
         theme={{
-          algorithm: themeMode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: themeMode === 'dark' ? 'rgb(235, 47, 150)' : 'rgb(22,119,255)',
+            colorPrimary: isDark ? 'rgb(235, 47, 150)' : 'rgb(22,119,255)',
           },
         }}
       >
         <SessionProvider session={pageProps.session}>
           <AnimatePresence>
-            <Component {...pageProps} />
-            <Button
-              type="primary"
-              ghost={themeMode === 'dark'}
-              icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
-              style={{
-                position: 'fixed',
-                top: '20px',
-                right: '20px',
-                zIndex: 1000,
-              }}
-              onClick={() => setThemeMode(themeMode === 'dark' ? 'light' : 'dark')}
-            />
+            <ProLayout>
+              <Component {...pageProps} />
+              <Button
+                type="primary"
+                ghost={isDark}
+                icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+                style={{
+                  position: 'fixed',
+                  bottom: '20px',
+                  right: '20px',
+                  zIndex: 1000,
+                }}
+                onClick={() => setIsDark(!isDark)}
+              />
+            </ProLayout>
           </AnimatePresence>
         </SessionProvider>
       </ConfigProvider>

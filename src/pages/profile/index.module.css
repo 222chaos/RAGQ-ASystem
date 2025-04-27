@@ -1,0 +1,58 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.uploadButton {
+  margin-top: 16px;
+}
+
+.form {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.form :global(.ant-form-item) {
+  margin-bottom: 24px;
+}
+
+.form :global(.ant-form-item-label > label) {
+  font-weight: 500;
+}
+
+.form :global(.ant-input),
+.form :global(.ant-input-affix-wrapper),
+.form :global(.ant-input-password) {
+  border-radius: 4px;
+  width: 100%;
+}
+
+.form :global(.ant-btn) {
+  border-radius: 4px;
+}
+
+.form :global(.ant-upload) {
+  width: 100%;
+}
+
+.form :global(.ant-upload-list) {
+  width: 100%;
+}
+
+.form :global(.ant-input-textarea) {
+  max-height: 200px;
+  overflow-y: auto;
+}

@@ -1,0 +1,48 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.description {
+  font-size: 18px;
+  color: #666;
+  margin-top: 20px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.card {
+  height: 100%;
+}
+
+.featureList,
+.guideList {
+  padding-left: 20px;
+}
+
+.featureList li,
+.guideList li {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.actions {
+  margin-top: 40px;
+}

@@ -1,0 +1,59 @@
+.logo {
+  height: 48px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to right, #1890ff, #722ed1);
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.logo:hover {
+  opacity: 0.9;
+}
+
+.logo img {
+  height: 32px;
+  margin-right: 8px;
+}
+
+.logo span {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1890ff;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.githubLink {
+  font-size: 20px;
+  color: #666;
+  transition: color 0.3s;
+}
+
+.githubLink:hover {
+  color: #1890ff;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  transition: all 0.3s;
+}
+
+.avatar:hover {
+  transform: scale(1.1);
+}
