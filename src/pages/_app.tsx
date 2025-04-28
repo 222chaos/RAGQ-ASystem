@@ -1,13 +1,25 @@
+import { MoonOutlined, SunOutlined } from '@ant-design/icons';
+import { Button, ConfigProvider, theme } from 'antd';
+import { AnimatePresence } from 'framer-motion';
 import { SessionProvider, useSession } from 'next-auth/react';
 import { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import ProLayout from '../components/Layout';
 import '../styles/globals.css';
+
+export const ThemeContext = createContext<{
+  themeMode: string;
+  setThemeMode: (mode: string) => void;
+}>({
+  themeMode: 'light',
+  setThemeMode: () => {},
+});
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { themeMode, setThemeMode } = useContext(ThemeContext);
 
   useEffect(() => {
     // 检查当前路径是否为认证相关页面
@@ -28,11 +40,6 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // 如果正在加载认证状态，显示加载中
-  if (status === 'loading') {
-    return <div>加载中...</div>;
-  }
-
   // 如果未认证，不显示内容
   if (status === 'unauthenticated') {
     return null;
@@ -42,11 +49,42 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+  const [themeMode, setThemeMode] = useState('light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeMode);
+  }, [themeMode]);
+
   return (
-    <SessionProvider session={session}>
-      <AuthWrapper>
-        <Component {...pageProps} />
-      </AuthWrapper>
-    </SessionProvider>
+    <ThemeContext.Provider value={{ themeMode, setThemeMode }}>
+      <ConfigProvider
+        theme={{
+          algorithm: themeMode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          token: {
+            colorPrimary: themeMode === 'dark' ? 'rgb(235, 47, 150)' : 'rgb(22,119,255)',
+          },
+        }}
+      >
+        <SessionProvider session={session}>
+          <AnimatePresence>
+            <AuthWrapper>
+              <Component {...pageProps} />
+              <Button
+                type="primary"
+                ghost={themeMode === 'dark'}
+                icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+                style={{
+                  position: 'fixed',
+                  top: '8px',
+                  right: '4px',
+                  zIndex: 1000,
+                }}
+                onClick={() => setThemeMode(themeMode === 'dark' ? 'light' : 'dark')}
+              />
+            </AuthWrapper>
+          </AnimatePresence>
+        </SessionProvider>
+      </ConfigProvider>
+    </ThemeContext.Provider>
   );
 }

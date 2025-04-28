@@ -1,5 +1,6 @@
 import { LockOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Form, Input, Modal, Space, Upload, message } from 'antd';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
@@ -14,6 +15,7 @@ interface UserInfo {
 }
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -24,12 +26,17 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
+      if (!session?.user?.id) return;
+
       try {
+        setLoading(true);
         const response = await fetch('/api/profile/user', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            Accept: 'application/json',
           },
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -58,16 +65,35 @@ export default function ProfilePage() {
           duration: 2,
           className: styles.errorMessage,
         });
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUserInfo();
-  }, [form]);
+  }, [session, form]);
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      // TODO: 调用更新个人信息的API
+      const response = await fetch('/api/profile/username', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: values.username }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '更新失败');
+      }
+
+      const data = await response.json();
+      setUserInfo({ ...userInfo!, username: data.username });
+      localStorage.setItem('username', data.username);
+      window.dispatchEvent(new CustomEvent('usernameUpdated', { detail: data.username }));
+
       message.success({
         content: '个人信息更新成功',
         duration: 2,
@@ -75,7 +101,7 @@ export default function ProfilePage() {
       });
     } catch (error) {
       message.error({
-        content: '更新失败，请重试',
+        content: error instanceof Error ? error.message : '更新失败，请重试',
         duration: 2,
         className: styles.errorMessage,
       });
@@ -87,7 +113,23 @@ export default function ProfilePage() {
   const handlePasswordSubmit = async (values) => {
     try {
       setLoading(true);
-      // TODO: 调用修改密码的API
+
+      const response = await fetch('/api/profile/password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '修改失败');
+      }
+
       message.success({
         content: '密码修改成功',
         duration: 2,
@@ -96,8 +138,9 @@ export default function ProfilePage() {
       setPasswordModalVisible(false);
       passwordForm.resetFields();
     } catch (error) {
+      console.error('密码修改失败:', error);
       message.error({
-        content: '密码修改失败，请重试',
+        content: error instanceof Error ? error.message : '修改失败，请重试',
         duration: 2,
         className: styles.errorMessage,
       });
@@ -110,6 +153,7 @@ export default function ProfilePage() {
     const { file, onSuccess, onError } = options;
 
     try {
+      setUploading(true);
       // 检查文件类型
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
@@ -145,7 +189,10 @@ export default function ProfilePage() {
 
           const data = await response.json();
           setAvatarUrl(data.avatarUrl);
+          // 更新 localStorage 中的头像
           localStorage.setItem('avatarUrl', data.avatarUrl);
+          // 触发自定义事件通知其他组件更新头像
+          window.dispatchEvent(new CustomEvent('avatarUpdated', { detail: data.avatarUrl }));
 
           message.success({
             content: '头像上传成功',
@@ -161,11 +208,14 @@ export default function ProfilePage() {
             duration: 2,
             className: styles.errorMessage,
           });
+        } finally {
+          setUploading(false);
         }
       };
 
       reader.onerror = (error) => {
         onError(error);
+        setUploading(false);
         message.error({
           content: '文件读取失败',
           duration: 2,
@@ -174,6 +224,7 @@ export default function ProfilePage() {
       };
     } catch (error) {
       onError(error);
+      setUploading(false);
       message.error({
         content: error instanceof Error ? error.message : '上传失败',
         duration: 2,
@@ -186,15 +237,28 @@ export default function ProfilePage() {
     <div className={styles.container}>
       <Card title="个人信息" className={styles.card}>
         <div className={styles.avatarSection}>
-          <Avatar size={120} src={avatarUrl} icon={<UserOutlined />} className={styles.avatar} />
+          <Avatar
+            size={120}
+            src={avatarUrl || undefined}
+            icon={<UserOutlined />}
+            className={styles.avatar}
+            onError={() => {
+              setAvatarUrl(null);
+              return false;
+            }}
+          />
           <Upload
             name="avatar"
             listType="picture"
             showUploadList={false}
             customRequest={customUpload}
-            disabled={uploading}
+            disabled={uploading || loading}
           >
-            <Button icon={<UploadOutlined />} className={styles.uploadButton} loading={uploading}>
+            <Button
+              icon={<UploadOutlined />}
+              className={styles.uploadButton}
+              loading={uploading || loading}
+            >
               {uploading ? '上传中...' : '更换头像'}
             </Button>
           </Upload>
@@ -213,7 +277,7 @@ export default function ProfilePage() {
           </Form.Item>
 
           <Form.Item>
-            <Space>
+            <Space style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
               <Button type="primary" htmlType="submit" loading={loading}>
                 保存修改
               </Button>

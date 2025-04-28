@@ -1,6 +1,7 @@
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Button, theme } from 'antd';
 import classnames from 'classnames';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import Slider from 'react-slick';
@@ -9,21 +10,18 @@ import 'slick-carousel/slick/slick.css';
 import Transition from '../Transition';
 import styles from './index.module.css';
 
-const imageInfoList = [
+export const imageInfoList = [
   {
     title: '需求工程',
-    description: '',
     url: 'https://node2d-public.hep.com.cn/37197bc254b97d32e5a1743d1428c44e.jpg-small?e=1709741130&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:-ICrqml9NpE0GNWMuQ7aAU1e6lI=',
   },
   {
     title: '操作系统',
-    description: '',
     url: 'https://node2d-public.hep.com.cn/bbd7693befd221e400c76cd30adb086d.jpg-small?e=1709742273&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:Zn62YEcqP-WMlsKOH3dbSqeVnvs=',
   },
   {
     title: '计算机网络',
-    description: '',
-    url: 'https://node2d-public.hep.com.cn/0747dff8c1bf2f5d32531a6e5a9ec707.jpg-small?e=1709741710&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:OFVZbtwB5rWnJgQldNA76WjcyPM=',
+    url: 'https://node2d-public.hep.com.cn/0747dff8c1bf2f5d32531a6e5a9ec707.jpg-small?e=1709741710&token=fz_hnGR7k1CJg3gJX1rpSAWQve4fO7q2Ii7oUBxR:OFVZbtwB5rWjcyPM=',
   },
 ];
 
@@ -43,6 +41,7 @@ export default function QAPage() {
   const sliderRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [slidesToShow, setSlidesToShow] = useState(3);
+  const { data: session } = useSession();
   const { token } = theme.useToken();
 
   useEffect(() => {
@@ -73,8 +72,14 @@ export default function QAPage() {
     sliderRef.current.slickNext();
   };
 
-  const handleImageClick = (title) => {
-    router.push(`/chat/${title}`);
+  const handleImageClick = () => {
+    if (!session) {
+      signIn();
+      return;
+    }
+    const path = `/qa/chat/${imageInfoList[selectedImageIndex % imageInfoList.length].title}`;
+    console.log('Navigating to:', path);
+    router.push(path);
   };
 
   return (
@@ -88,7 +93,7 @@ export default function QAPage() {
             slidesToShow={slidesToShow}
             afterChange={(index) => setSelectedImageIndex(index)}
           >
-            {[...imageInfoList, ...imageInfoList].map(({ url, title, description }, index) => (
+            {[...imageInfoList, ...imageInfoList].map(({ url, title }, index) => (
               <div key={index}>
                 <div
                   className={classnames(styles['slider-item'], {
@@ -96,10 +101,7 @@ export default function QAPage() {
                   })}
                 >
                   <img src={url} alt={`Image ${index + 1}`} />
-                  <div style={{ textAlign: 'center', color: token.colorText }}>
-                    <h2>{title}</h2>
-                    <p>{description}</p>
-                  </div>
+                  <div style={{ textAlign: 'center', color: token.colorText }}>{title}</div>
                 </div>
               </div>
             ))}
@@ -115,15 +117,14 @@ export default function QAPage() {
             </>
           )}
           <div
-            style={{ position: 'relative', textAlign: 'center', right: '2em', marginTop: '2em' }}
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '16px',
+              alignItems: 'center',
+            }}
           >
-            <Button
-              size="large"
-              type="primary"
-              onClick={() =>
-                handleImageClick(imageInfoList[selectedImageIndex % imageInfoList.length].title)
-              }
-            >
+            <Button size="large" type="primary" onClick={handleImageClick}>
               以《{imageInfoList[selectedImageIndex % imageInfoList.length].title}》开始对话
             </Button>
           </div>

@@ -17,34 +17,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: '未授权' });
     }
 
-    const { avatarUrl } = req.body;
+    const { username } = req.body;
 
-    if (!avatarUrl) {
-      return res.status(400).json({ message: '头像URL不能为空' });
+    if (!username) {
+      return res.status(400).json({ message: '用户名不能为空' });
     }
 
-    // 直接存储Base64数据
+    // 检查用户名是否已存在
+    const existingUser = await sql`
+      SELECT id FROM users WHERE username = ${username} AND id != ${session.user.id}
+    `;
+
+    if (existingUser && existingUser.length > 0) {
+      return res.status(400).json({ message: '用户名已存在' });
+    }
+
+    // 更新用户名
     const result = await sql`
       UPDATE users 
-      SET avatar_url = ${avatarUrl}
+      SET username = ${username}
       WHERE id = ${session.user.id}
-      RETURNING avatar_url
+      RETURNING username
     `;
 
     if (!result || result.length === 0) {
       return res.status(404).json({ message: '用户不存在' });
     }
 
-    // 返回更新后的头像URL
     return res.status(200).json({
-      message: '头像更新成功',
-      avatarUrl: result[0].avatar_url,
+      message: '用户名更新成功',
+      username: result[0].username,
     });
   } catch (error) {
-    console.error('更新头像失败:', error);
+    console.error('更新用户名失败:', error);
     if (error instanceof Error) {
       return res.status(500).json({ message: error.message });
     }
-    return res.status(500).json({ message: '更新头像失败' });
+    return res.status(500).json({ message: '更新用户名失败' });
   }
 }

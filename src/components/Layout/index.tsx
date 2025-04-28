@@ -2,61 +2,74 @@ import {
   BarChartOutlined,
   BookOutlined,
   FileTextOutlined,
-  LockOutlined,
   LogoutOutlined,
   MessageOutlined,
   QuestionCircleOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { neon } from '@neondatabase/serverless';
 import { Avatar, Dropdown, Form, Input, Layout, Menu, message, Modal, theme } from 'antd';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 const { Header, Content, Sider } = Layout;
 
-const menuItems = [
+const getMenuItems = (userType: string) => {
+  const baseItems = [
+    {
+      key: 'analysis',
+      icon: <BarChartOutlined />,
+      label: '个性化分析模块',
+    },
+  ];
+
+  if (userType === 'teacher') {
+    return [
+      {
+        key: 'student',
+        icon: <UserOutlined />,
+        label: '学生管理',
+      },
+      {
+        key: 'knowledge',
+        icon: <BookOutlined />,
+        label: '知识库管理',
+      },
+      ...baseItems,
+    ];
+  } else {
+    return [
+      {
+        key: 'qa',
+        icon: <QuestionCircleOutlined />,
+        label: '问答模块',
+      },
+      {
+        key: 'notes',
+        icon: <FileTextOutlined />,
+        label: '笔记模块',
+      },
+      ...baseItems,
+    ];
+  }
+};
+
+const profileMenuItem = [
   {
     key: 'profile',
     icon: <UserOutlined />,
-    label: '个人信息管理',
-  },
-  {
-    key: 'permission',
-    icon: <LockOutlined />,
-    label: '权限管理',
-  },
-  {
-    key: 'knowledge',
-    icon: <BookOutlined />,
-    label: '知识库管理',
-  },
-  {
-    key: 'qa',
-    icon: <QuestionCircleOutlined />,
-    label: '问答模块',
+    label: '个人中心',
   },
   {
     key: 'feedback',
     icon: <MessageOutlined />,
     label: '反馈模块',
   },
-  {
-    key: 'notes',
-    icon: <FileTextOutlined />,
-    label: '笔记模块',
-  },
-  {
-    key: 'analysis',
-    icon: <BarChartOutlined />,
-    label: '个性化分析模块',
-  },
 ];
-
 export default function ProLayout({ children }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const { token } = theme.useToken();
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -64,24 +77,32 @@ export default function ProLayout({ children }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [username, setUsername] = useState('');
+  const [userType, setUserType] = useState('student');
 
-  // 从数据库获取用户信息
   useEffect(() => {
     const fetchUserInfo = async () => {
-      try {
-        const sql = neon(process.env.DATABASE_URL!);
-        const result =
-          await sql`SELECT username, avatar_url FROM users WHERE id = ${sessionStorage.getItem('userId')}`;
+      if (!session?.user?.id) return;
 
-        if (result && result.length > 0) {
-          const user = result[0];
-          setUsername(user.username);
-          if (user.avatar_url) {
-            setAvatarUrl(user.avatar_url);
-            localStorage.setItem('avatarUrl', user.avatar_url);
-          }
-          localStorage.setItem('username', user.username);
-          message.success(`欢迎，${user.username}！`);
+      try {
+        const response = await fetch('/api/profile/user', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('获取用户信息失败');
+        }
+
+        const data = await response.json();
+        setUsername(data.username);
+        setUserType(data.userType || 'student');
+        if (data.avatarUrl) {
+          setAvatarUrl(data.avatarUrl);
+          localStorage.setItem('avatarUrl', data.avatarUrl);
         }
       } catch (error) {
         console.error('获取用户信息失败:', error);
@@ -89,7 +110,18 @@ export default function ProLayout({ children }) {
     };
 
     fetchUserInfo();
-  }, []);
+
+    // 添加头像更新事件监听
+    const handleAvatarUpdate = (event: CustomEvent) => {
+      setAvatarUrl(event.detail);
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
+    };
+  }, [session]);
 
   const handleLogout = async () => {
     try {
@@ -153,7 +185,13 @@ export default function ProLayout({ children }) {
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
         theme="light"
-        style={{ height: '100vh', overflow: 'hidden' }}
+        style={{
+          height: '100vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+        }}
       >
         <div className={styles.logo} onClick={() => router.push('/')}>
           <img style={{ position: 'relative', left: '0em' }} src="/logo.png" alt="Logo" />
@@ -162,16 +200,29 @@ export default function ProLayout({ children }) {
         <Menu
           theme="light"
           defaultSelectedKeys={[router.pathname.split('/')[1] || '']}
-          mode="inline"
-          items={menuItems}
+          items={getMenuItems(userType)}
           onClick={({ key }) => router.push(`/${key}`)}
-          style={{ height: 'calc(100vh - 64px)', overflowY: 'auto' }}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+          }}
+        />
+        <Menu
+          theme="light"
+          selectedKeys={[router.pathname.split('/')[1] || '']}
+          items={profileMenuItem}
+          onClick={({ key }) => router.push(`/${key}`)}
+          style={{
+            position: 'absolute',
+            bottom: '3em', // 位于折叠按钮上方
+            left: 0,
+            right: 0,
+          }}
         />
       </Sider>
       <Layout>
         <Header
           style={{
-            padding: '0 16px',
             background: token.colorBgContainer,
             height: 48,
             lineHeight: '48px',
@@ -182,12 +233,24 @@ export default function ProLayout({ children }) {
           }}
         >
           <div className={styles.breadcrumb}>
-            {menuItems.find((item) => item.key === (router.pathname.split('/')[1] || ''))?.label}
+            {
+              getMenuItems(userType).find(
+                (item) => item.key === (router.pathname.split('/')[1] || ''),
+              )?.label
+            }
           </div>
           <div className={styles.headerRight}>
             <span style={{ marginRight: 16, color: '#262626' }}>{username}</span>
             <Dropdown menu={{ items }} placement="bottomRight">
-              <Avatar src={avatarUrl} icon={<UserOutlined />} style={{ cursor: 'pointer' }} />
+              <Avatar
+                src={avatarUrl || undefined}
+                icon={<UserOutlined />}
+                style={{ cursor: 'pointer' }}
+                onError={() => {
+                  setAvatarUrl(null);
+                  return false;
+                }}
+              />
             </Dropdown>
           </div>
         </Header>
