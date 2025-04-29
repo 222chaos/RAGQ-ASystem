@@ -81,6 +81,12 @@ export default function ProLayout({ children }) {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
+      // 首先从 localStorage 获取用户类型
+      const storedUserType = localStorage.getItem('userType');
+      if (storedUserType) {
+        setUserType(storedUserType);
+      }
+
       if (!session?.user?.id) return;
 
       try {
@@ -99,7 +105,11 @@ export default function ProLayout({ children }) {
 
         const data = await response.json();
         setUsername(data.username);
-        setUserType(data.userType || 'student');
+        // 如果 API 返回了用户类型，则使用 API 返回的值
+        if (data.userType) {
+          setUserType(data.userType);
+          localStorage.setItem('userType', data.userType);
+        }
         if (data.avatarUrl) {
           setAvatarUrl(data.avatarUrl);
           localStorage.setItem('avatarUrl', data.avatarUrl);
