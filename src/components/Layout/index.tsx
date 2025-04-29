@@ -24,6 +24,20 @@ const getMenuItems = (userType: string) => {
     },
   ];
 
+  const studentItems = [
+    {
+      key: 'qa',
+      icon: <QuestionCircleOutlined />,
+      label: '问答模块',
+    },
+    {
+      key: 'notes',
+      icon: <FileTextOutlined />,
+      label: '笔记模块',
+    },
+    ...baseItems,
+  ];
+
   if (userType === 'teacher') {
     return [
       {
@@ -36,22 +50,10 @@ const getMenuItems = (userType: string) => {
         icon: <BookOutlined />,
         label: '知识库管理',
       },
-      ...baseItems,
+      ...studentItems,
     ];
   } else {
-    return [
-      {
-        key: 'qa',
-        icon: <QuestionCircleOutlined />,
-        label: '问答模块',
-      },
-      {
-        key: 'notes',
-        icon: <FileTextOutlined />,
-        label: '笔记模块',
-      },
-      ...baseItems,
-    ];
+    return studentItems;
   }
 };
 
