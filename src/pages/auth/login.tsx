@@ -3,7 +3,7 @@ import { Button, Form, Input, Radio, message } from 'antd';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import styles from '../../styles/Auth.module.css';
+import styles from './Auth.module.css';
 
 export default function Login() {
   const [form] = Form.useForm();
