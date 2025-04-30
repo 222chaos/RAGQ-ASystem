@@ -1,5 +1,5 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Radio, message } from 'antd';
+import { Button, Form, Input, message, Radio } from 'antd';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
@@ -68,9 +68,9 @@ export default function Login() {
             </Button>
           </Form.Item>
         </Form>
-        {/* <p className={styles.switchAuth}>
+        <p className={styles.switchAuth}>
           还没有账号？ <a href="/auth/register">立即注册</a>
-        </p> */}
+        </p>
       </div>
     </div>
   );

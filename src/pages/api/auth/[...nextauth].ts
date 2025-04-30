@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
+import bcrypt from 'bcryptjs';
 import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -35,7 +36,8 @@ export const authOptions: AuthOptions = {
             throw new Error(`请使用${user.type === 'student' ? '学生' : '教师'}账号登录`);
           }
 
-          if (credentials.password !== user.password) {
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+          if (!isValid) {
             throw new Error('密码错误');
           }
 

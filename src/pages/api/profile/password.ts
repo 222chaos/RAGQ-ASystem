@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
+import bcrypt from 'bcryptjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
@@ -32,15 +33,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ message: '用户不存在' });
     }
 
-    // 直接比较密码
-    if (currentPassword !== user[0].password) {
+    // 验证当前密码
+    const isValid = await bcrypt.compare(currentPassword, user[0].password);
+    if (!isValid) {
       return res.status(400).json({ message: '当前密码错误' });
     }
+
+    // 加密新密码
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // 更新密码
     await sql`
       UPDATE users 
-      SET password = ${newPassword}
+      SET password = ${hashedPassword}
       WHERE id = ${session.user.id}
     `;
 

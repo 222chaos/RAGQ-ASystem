@@ -35,6 +35,11 @@ const getMenuItems = (userType: string) => {
       icon: <FileTextOutlined />,
       label: '笔记模块',
     },
+    {
+      key: 'exercises',
+      icon: <FileTextOutlined />,
+      label: '练习模块',
+    },
     ...baseItems,
   ];
 
@@ -49,6 +54,11 @@ const getMenuItems = (userType: string) => {
         key: 'knowledge',
         icon: <BookOutlined />,
         label: '知识库管理',
+      },
+      {
+        key: 'exercise-management',
+        icon: <FileTextOutlined />,
+        label: '练习管理',
       },
       ...studentItems,
     ];

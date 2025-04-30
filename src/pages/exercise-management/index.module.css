@@ -1,0 +1,11 @@
+.container {
+  padding: 24px;
+}
+
+.container :global(.ant-card) {
+  margin-bottom: 24px;
+}
+
+.container :global(.ant-table) {
+  margin-top: 16px;
+}

@@ -1,58 +1,55 @@
-import { message } from 'antd';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Form, Input, message } from 'antd';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import styles from '../../styles/Auth.module.css';
+import styles from './Auth.module.css';
 
 export default function Register() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      message.error('两次输入的密码不一致');
-      return;
-    }
-
+  const handleSubmit = async (values: any) => {
     setLoading(true);
-
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: values.username,
+          password: values.password,
+          type: 'teacher', // 固定为教师类型
+        }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || '注册失败');
-      }
+      if (response.ok) {
+        message.success('注册成功，正在自动登录...');
 
-      message.success('注册成功！正在自动登录...');
+        // 自动登录
+        const result = await signIn('credentials', {
+          redirect: false,
+          username: values.username,
+          password: values.password,
+          type: 'teacher',
+        });
 
-      // 自动登录
-      const result = await signIn('credentials', {
-        redirect: false,
-        username,
-        password,
-      });
-
-      if (result?.error) {
-        message.error('自动登录失败，请手动登录');
-        router.push('/');
+        if (result?.error) {
+          message.error('自动登录失败，请手动登录');
+          router.push('/auth/login');
+        } else {
+          localStorage.setItem('userType', 'teacher');
+          router.push('/');
+        }
       } else {
-        router.push('/');
+        message.error(data.message || '注册失败');
       }
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '注册过程中发生错误');
+      message.error('注册过程中发生错误');
     } finally {
       setLoading(false);
     }
@@ -61,45 +58,57 @@ export default function Register() {
   return (
     <div className={styles.container}>
       <div className={styles.authBox}>
-        <h1>注册</h1>
-        <form onSubmit={handleSubmit}>
-          <div className={styles.formGroup}>
-            <label htmlFor="username">用户名</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="password">密码</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="confirmPassword">确认密码</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" disabled={loading} className={styles.submitButton}>
-            {loading ? '注册中...' : '注册'}
-          </button>
-        </form>
-        <p className={styles.switchAuth}>
-          已有账号？ <a href="/auth/login">立即登录</a>
-        </p>
+        <h1>教师注册</h1>
+        <Form form={form} name="register" onFinish={handleSubmit} layout="vertical">
+          <Form.Item
+            name="username"
+            rules={[
+              { required: true, message: '请输入用户名' },
+              { min: 3, message: '用户名至少3个字符' },
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="用户名" size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 6, message: '密码至少6个字符' },
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: '请确认密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="确认密码" size="large" />
+          </Form.Item>
+
+          <Form.Item>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <Button type="primary" htmlType="submit" loading={loading} size="large" block>
+                注册
+              </Button>
+              <Button type="default" size="large" block onClick={() => router.push('/auth/login')}>
+                返回登录
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );
