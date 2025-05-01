@@ -85,12 +85,144 @@
 
 .contentBox {
   padding: 16px;
-  border-radius: 4px;
-  min-height: 100px;
+  background-color: var(--ant-color-bg-layout);
+  border-radius: var(--ant-border-radius);
 }
 
 .previewDeadline h3 {
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
+}
+
+.scrollableContent {
+  max-height: 200px;
+  min-height: 150px;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: var(--ant-border-radius);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.scrollableContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollableContent::-webkit-scrollbar-track {
+  background: var(--ant-color-bg-container);
+  border-radius: 3px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb {
+  background: var(--ant-color-text-secondary);
+  border-radius: 3px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb:hover {
+  background: var(--ant-color-text);
+}
+
+.previewDescription,
+.previewContent,
+.previewDeadline {
+  margin-bottom: 24px;
+}
+
+.previewDescription h3,
+.previewContent h3,
+.previewDeadline h3 {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.tagWrapper {
+  margin-top: 8px;
+}
+
+.previewButton {
+  background-color: var(--ant-color-primary);
+  border-color: var(--ant-color-primary);
+  color: var(--ant-color-white);
+}
+
+.previewButton:hover {
+  background-color: var(--ant-color-primary-hover);
+  border-color: var(--ant-color-primary-hover);
+}
+
+.previewButton:active {
+  background-color: var(--ant-color-primary-active);
+  border-color: var(--ant-color-primary-active);
+}
+
+.modalFooter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.createTime {
+  color: var(--ant-text-color-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.deadline {
+  color: var(--ant-color-warning);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.content {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: var(--ant-color-bg-layout);
+  border-radius: var(--ant-border-radius);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: var(--ant-color-bg-container);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--ant-color-text-secondary);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--ant-color-text);
+}
+
+.modal :global(.ant-modal-body) {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal :global(.ant-modal-body::-webkit-scrollbar) {
+  width: 6px;
+  height: 6px;
+}
+
+.modal :global(.ant-modal-body::-webkit-scrollbar-track) {
+  background: var(--ant-color-bg-container);
+  border-radius: 3px;
+}
+
+.modal :global(.ant-modal-body::-webkit-scrollbar-thumb) {
+  background: var(--ant-color-text-secondary);
+  border-radius: 3px;
+}
+
+.modal :global(.ant-modal-body::-webkit-scrollbar-thumb:hover) {
+  background: var(--ant-color-text);
 }

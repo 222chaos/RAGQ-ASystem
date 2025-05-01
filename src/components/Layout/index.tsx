@@ -60,7 +60,17 @@ const getMenuItems = (userType: string) => {
         icon: <FileTextOutlined />,
         label: '练习管理',
       },
-      ...studentItems,
+      {
+        key: 'qa',
+        icon: <QuestionCircleOutlined />,
+        label: '问答模块',
+      },
+      {
+        key: 'notes',
+        icon: <FileTextOutlined />,
+        label: '笔记模块',
+      },
+      ...baseItems,
     ];
   } else {
     return studentItems;

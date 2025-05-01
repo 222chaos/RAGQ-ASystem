@@ -11,7 +11,6 @@ import {
   DatePicker,
   Form,
   Input,
-  InputNumber,
   message,
   Modal,
   Popconfirm,
@@ -20,28 +19,31 @@ import {
   Table,
   Tag,
   Tooltip,
+  Typography,
 } from 'antd';
-import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+const { Paragraph, Title } = Typography;
 
 interface Exercise {
-  id: string;
+  id: number;
   title: string;
   description: string;
   difficulty: '简单' | '中等' | '困难';
   content: string;
-  createTime: string;
+  created_at: string;
   status: '已发布' | '草稿';
-  type: '选择题' | '填空题' | '简答题';
-  points: number;
   deadline?: string;
+  teacher_user_id: number;
 }
 
 const ExerciseManagement = () => {
+  const { data: session } = useSession();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -49,9 +51,48 @@ const ExerciseManagement = () => {
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case '简单':
+        return 'green';
+      case '中等':
+        return 'orange';
+      case '困难':
+        return 'red';
+      default:
+        return 'blue';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    return status === '已发布' ? 'green' : 'blue';
+  };
+
+  // 获取练习列表
+  const fetchExercises = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/exercises');
+      if (!response.ok) {
+        throw new Error('获取练习列表失败');
+      }
+      const data = await response.json();
+      setExercises(data);
+    } catch (error) {
+      message.error('获取练习列表失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 在组件加载时获取数据
+  useEffect(() => {
+    fetchExercises();
+  }, []);
 
   const columns = [
     {
@@ -64,20 +105,6 @@ const ExerciseManagement = () => {
           <span className={styles.titleText}>{text}</span>
         </Tooltip>
       ),
-    },
-    {
-      title: '类型',
-      dataIndex: 'type',
-      key: 'type',
-      width: '10%',
-      render: (type: string) => {
-        const colors = {
-          选择题: 'blue',
-          填空题: 'purple',
-          简答题: 'cyan',
-        };
-        return <Tag color={colors[type]}>{type}</Tag>;
-      },
     },
     {
       title: '难度',
@@ -94,13 +121,6 @@ const ExerciseManagement = () => {
       },
     },
     {
-      title: '分值',
-      dataIndex: 'points',
-      key: 'points',
-      width: '8%',
-      render: (points: number) => <span>{points}分</span>,
-    },
-    {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
@@ -115,18 +135,39 @@ const ExerciseManagement = () => {
     },
     {
       title: '创建时间',
-      dataIndex: 'createTime',
-      key: 'createTime',
+      dataIndex: 'created_at',
+      key: 'created_at',
       width: '15%',
+      render: (date: string) =>
+        new Date(date).toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }),
       sorter: (a: Exercise, b: Exercise) =>
-        new Date(a.createTime).getTime() - new Date(b.createTime).getTime(),
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
       title: '截止时间',
       dataIndex: 'deadline',
       key: 'deadline',
       width: '15%',
-      render: (deadline: string) => deadline || '无',
+      render: (deadline: string) =>
+        deadline
+          ? new Date(deadline).toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false,
+            })
+          : '无',
     },
     {
       title: '操作',
@@ -175,14 +216,22 @@ const ExerciseManagement = () => {
     setIsPreviewVisible(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       setLoading(true);
-      // TODO: 调用删除练习的 API
+      const response = await fetch(`/api/exercises/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '删除失败');
+      }
+
       setExercises(exercises.filter((exercise) => exercise.id !== id));
       message.success('删除成功');
     } catch (error) {
-      message.error('删除失败');
+      message.error(error instanceof Error ? error.message : '删除失败');
     } finally {
       setLoading(false);
     }
@@ -190,35 +239,52 @@ const ExerciseManagement = () => {
 
   const handleSubmit = async () => {
     try {
+      if (!session?.user?.id) {
+        message.error('请先登录');
+        return;
+      }
+
       setLoading(true);
       const values = await form.validateFields();
       const formattedValues = {
         ...values,
         deadline: values.deadline ? values.deadline.format('YYYY-MM-DD HH:mm:ss') : null,
+        teacher_user_id: session.user.id,
+        status: values.status === '立即发布' ? '已发布' : values.status,
       };
 
+      const url = editingExercise ? `/api/exercises/${editingExercise.id}` : '/api/exercises';
+
+      const method = editingExercise ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formattedValues),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `${editingExercise ? '更新' : '创建'}练习失败`);
+      }
+
+      const result = await response.json();
+
       if (editingExercise) {
-        // TODO: 调用更新练习的 API
-        setExercises(
-          exercises.map((exercise) =>
-            exercise.id === editingExercise.id ? { ...exercise, ...formattedValues } : exercise,
-          ),
-        );
+        setExercises(exercises.map((ex) => (ex.id === editingExercise.id ? result : ex)));
         message.success('更新成功');
       } else {
-        // TODO: 调用创建练习的 API
-        const newExercise = {
-          ...formattedValues,
-          id: Date.now().toString(),
-          createTime: new Date().toISOString().split('T')[0],
-          status: '草稿',
-        };
-        setExercises([...exercises, newExercise]);
+        setExercises([...exercises, result]);
         message.success('创建成功');
       }
+
       setIsModalVisible(false);
+      form.resetFields();
+      setEditingExercise(null);
     } catch (error) {
-      message.error('操作失败');
+      message.error(error instanceof Error ? error.message : '操作失败');
     } finally {
       setLoading(false);
     }
@@ -228,7 +294,7 @@ const ExerciseManagement = () => {
     setSearchText(value);
   };
 
-  const handleStatusChange = (value: string[]) => {
+  const handleStatusChange = (value: string) => {
     setSelectedStatus(value);
   };
 
@@ -248,13 +314,13 @@ const ExerciseManagement = () => {
     const matchesSearch =
       exercise.title.toLowerCase().includes(searchText.toLowerCase()) ||
       exercise.description.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus = selectedStatus.length === 0 || selectedStatus.includes(exercise.status);
+    const matchesStatus = !selectedStatus || exercise.status === selectedStatus;
     const matchesDifficulty =
       selectedDifficulty.length === 0 || selectedDifficulty.includes(exercise.difficulty);
     const matchesDate =
       !dateRange ||
-      (new Date(exercise.createTime) >= new Date(dateRange[0]) &&
-        new Date(exercise.createTime) <= new Date(dateRange[1]));
+      (new Date(exercise.created_at) >= new Date(dateRange[0]) &&
+        new Date(exercise.created_at) <= new Date(dateRange[1]));
     return matchesSearch && matchesStatus && matchesDifficulty && matchesDate;
   });
 
@@ -271,10 +337,10 @@ const ExerciseManagement = () => {
                 style={{ width: 200 }}
               />
               <Select
-                mode="multiple"
                 placeholder="状态筛选"
                 style={{ width: 200 }}
                 onChange={handleStatusChange}
+                allowClear
                 options={[
                   { label: '已发布', value: '已发布' },
                   { label: '草稿', value: '草稿' },
@@ -337,18 +403,6 @@ const ExerciseManagement = () => {
             </Form.Item>
 
             <Form.Item
-              name="type"
-              label="练习类型"
-              rules={[{ required: true, message: '请选择练习类型' }]}
-            >
-              <Select placeholder="请选择练习类型">
-                <Option value="选择题">选择题</Option>
-                <Option value="填空题">填空题</Option>
-                <Option value="简答题">简答题</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
               name="description"
               label="描述"
               rules={[{ required: true, message: '请输入描述' }]}
@@ -369,19 +423,23 @@ const ExerciseManagement = () => {
             </Form.Item>
 
             <Form.Item
-              name="points"
-              label="分值"
-              rules={[{ required: true, message: '请输入分值' }]}
-            >
-              <InputNumber min={1} max={100} placeholder="请输入分值" style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item
               name="content"
               label="练习内容"
               rules={[{ required: true, message: '请输入练习内容' }]}
             >
               <TextArea rows={6} placeholder="请输入练习内容" />
+            </Form.Item>
+
+            <Form.Item
+              name="status"
+              label="状态"
+              rules={[{ required: true, message: '请选择状态' }]}
+              initialValue="草稿"
+            >
+              <Select placeholder="请选择状态">
+                <Option value="草稿">保存为草稿</Option>
+                <Option value="已发布">立即发布</Option>
+              </Select>
             </Form.Item>
 
             <Form.Item name="deadline" label="截止时间">
@@ -397,53 +455,35 @@ const ExerciseManagement = () => {
       </Modal>
 
       <Modal
-        title="练习预览"
+        title={editingExercise?.title}
         open={isPreviewVisible}
         onCancel={() => setIsPreviewVisible(false)}
-        width={800}
         footer={null}
+        width={800}
         className={styles.modalWrapper}
       >
         {editingExercise && (
-          <div className={styles.previewContent}>
-            <div className={styles.previewHeader}>
-              <h2>{editingExercise.title}</h2>
-              <div className={styles.tagWrapper}>
-                <Space>
-                  <Tag color={editingExercise.status === '已发布' ? 'green' : 'blue'}>
-                    {editingExercise.status}
-                  </Tag>
-                  <Tag
-                    color={
-                      editingExercise.difficulty === '简单'
-                        ? 'green'
-                        : editingExercise.difficulty === '中等'
-                          ? 'orange'
-                          : 'red'
-                    }
-                  >
-                    {editingExercise.difficulty}
-                  </Tag>
-                  <Tag color="blue">{editingExercise.type}</Tag>
-                  <span>{editingExercise.points}分</span>
-                </Space>
-              </div>
+          <>
+            <Paragraph>{editingExercise.description}</Paragraph>
+            <div className={styles.modalFooter}>
+              <Tag color={getDifficultyColor(editingExercise.difficulty)}>
+                {editingExercise.difficulty}
+              </Tag>
+              <Tag color={getStatusColor(editingExercise.status)}>{editingExercise.status}</Tag>
+              <span className={styles.createTime}>
+                创建时间：{new Date(editingExercise.created_at).toLocaleString('zh-CN')}
+              </span>
+              {editingExercise.deadline && (
+                <span className={styles.deadline}>
+                  截止时间：{new Date(editingExercise.deadline).toLocaleString('zh-CN')}
+                </span>
+              )}
             </div>
-            <div className={styles.previewDescription}>
-              <h3>描述</h3>
-              <p>{editingExercise.description}</p>
+            <div className={styles.content}>
+              <Title level={4}>练习内容</Title>
+              <Paragraph>{editingExercise.content}</Paragraph>
             </div>
-            <div className={styles.previewContent}>
-              <h3>练习内容</h3>
-              <div className={styles.contentBox}>{editingExercise.content}</div>
-            </div>
-            {editingExercise.deadline && (
-              <div className={styles.previewDeadline}>
-                <h3>截止时间</h3>
-                <p>{editingExercise.deadline}</p>
-              </div>
-            )}
-          </div>
+          </>
         )}
       </Modal>
     </div>
