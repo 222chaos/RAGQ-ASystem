@@ -1,7 +1,8 @@
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Form, Input, message, Modal, Popconfirm, Select, Space } from 'antd';
-import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 // 模拟班级数据
@@ -16,46 +17,58 @@ const mockClasses = [
   '数据科学与大数据技术2班',
 ];
 
-// 模拟学生数据
-const generateMockStudents = () => {
-  const students = [];
-  const names = ['张', '王', '李', '赵', '刘', '陈', '杨', '黄', '周', '吴'];
-
-  for (let i = 1; i <= 20; i++) {
-    const firstName = names[Math.floor(Math.random() * names.length)];
-    const lastName = Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, '0');
-    const classIndex = Math.floor(Math.random() * mockClasses.length);
-
-    students.push({
-      id: i.toString(),
-      name: `${firstName}${lastName}`,
-      studentId: `2023${Math.floor(Math.random() * 1000)
-        .toString()
-        .padStart(3, '0')}`,
-      class: mockClasses[classIndex],
-      phone: `138${Math.floor(Math.random() * 100000000)
-        .toString()
-        .padStart(8, '0')}`,
-      email: `student${i}@example.com`,
-    });
-  }
-  return students;
-};
+interface Student {
+  id: string;
+  name: string;
+  studentId: string;
+  class: string;
+  phone: string;
+  email: string;
+}
 
 export default function StudentPage() {
-  const [students, setStudents] = useState(generateMockStudents());
-  const [filteredStudents, setFilteredStudents] = useState(students);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isContactModalVisible, setIsContactModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const [contactForm] = Form.useForm();
   const [searchForm] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const { data: session } = useSession();
+
+  const fetchStudents = async () => {
+    if (!session?.user?.id) return;
+
+    setTableLoading(true);
+    try {
+      const response = await fetch(`/api/student/list?teacherUserId=${session.user.id}`);
+      const result = await response.json();
+
+      if (response.ok) {
+        setStudents(result.data);
+        setFilteredStudents(result.data);
+      } else {
+        message.error(result.message || '获取学生列表失败');
+      }
+    } catch (error) {
+      message.error('获取学生列表失败');
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, [session?.user?.id]);
 
   const handleSearch = () => {
     const values = searchForm.getFieldsValue();
     const filtered = students.filter((student) => {
       return Object.entries(values).every(([key, value]) => {
-        if (!value) return true; // 如果查询条件为空，则不过滤
+        if (!value) return true;
         return String(student[key]).toLowerCase().includes(String(value).toLowerCase());
       });
     });
@@ -65,6 +78,117 @@ export default function StudentPage() {
   const handleReset = () => {
     searchForm.resetFields();
     setFilteredStudents(students);
+    fetchStudents(); // 重新获取所有学生数据
+  };
+
+  const handleAdd = () => {
+    form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleEdit = (record: Student) => {
+    form.setFieldsValue({
+      ...record,
+      class: record.class,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/student/delete?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.success('删除成功');
+        fetchStudents();
+      } else {
+        message.error(data.message || '删除失败');
+      }
+    } catch (error) {
+      message.error('删除过程中发生错误');
+    }
+  };
+
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+
+      const isEdit = form.getFieldValue('id');
+      const url = isEdit ? '/api/student/update' : '/api/auth/register-student';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...values,
+          id: form.getFieldValue('id'),
+          studentId: values.studentId,
+          className: values.class,
+          teacherUserId: session?.user?.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.success(isEdit ? '更新成功' : '添加成功');
+        setIsModalVisible(false);
+        fetchStudents(); // 刷新学生列表
+      } else {
+        message.error(data.message || (isEdit ? '更新失败' : '添加失败'));
+      }
+    } catch (error) {
+      message.error('操作过程中发生错误');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContactEdit = (record: Student) => {
+    setSelectedStudent(record);
+    contactForm.setFieldsValue({
+      id: record.id,
+      phone: record.phone,
+      email: record.email,
+    });
+    setIsContactModalVisible(true);
+  };
+
+  const handleContactSubmit = async () => {
+    try {
+      const values = await contactForm.validateFields();
+      setLoading(true);
+
+      const response = await fetch('/api/student/update-contact', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.success('联系方式更新成功');
+        setIsContactModalVisible(false);
+        fetchStudents(); // 刷新学生列表
+      } else {
+        message.error(data.message || '更新失败');
+      }
+    } catch (error) {
+      message.error('更新过程中发生错误');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
@@ -126,52 +250,17 @@ export default function StudentPage() {
     },
   ];
 
-  const handleDelete = (id) => {
-    setStudents(students.filter((student) => student.id !== id));
-    message.success('删除成功');
-  };
-
-  const handleEdit = (record) => {
-    form.setFieldsValue(record);
-    setIsModalVisible(true);
-  };
-
-  const handleAdd = () => {
-    form.resetFields();
-    setIsModalVisible(true);
-  };
-
-  const handleModalOk = () => {
-    form.validateFields().then((values) => {
-      if (values.id) {
-        // 编辑
-        setStudents(
-          students.map((student) => (student.id === values.id ? { ...values } : student)),
-        );
-        message.success('修改成功');
-      } else {
-        // 新增
-        const newStudent = {
-          ...values,
-          id: (students.length + 1).toString(),
-        };
-        setStudents([...students, newStudent]);
-        message.success('添加成功');
-      }
-      setIsModalVisible(false);
-    });
-  };
-
   return (
     <div className={styles.container}>
       <ProTable
         columns={columns}
         dataSource={filteredStudents}
         rowKey="id"
+        loading={tableLoading}
         search={{
           labelWidth: 'auto',
           defaultCollapsed: false,
-          optionRender: (_, __, dom) => [
+          optionRender: (searchConfig, formProps, dom) => [
             <Button
               key="search"
               icon={<SearchOutlined />}
@@ -181,7 +270,15 @@ export default function StudentPage() {
             >
               查询
             </Button>,
-            dom[0], // 重置按钮
+            <Button
+              key="reset"
+              onClick={() => {
+                formProps.form?.resetFields();
+                handleReset();
+              }}
+            >
+              重置
+            </Button>,
           ],
           form: searchForm,
         }}
@@ -199,7 +296,11 @@ export default function StudentPage() {
         title={form.getFieldValue('id') ? '编辑学生' : '添加学生'}
         open={isModalVisible}
         onOk={handleModalOk}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          setIsModalVisible(false);
+          form.resetFields();
+        }}
+        confirmLoading={loading}
       >
         <Form form={form} layout="vertical">
           <Form.Item name="id" hidden>
@@ -213,7 +314,7 @@ export default function StudentPage() {
             label="学号"
             rules={[{ required: true, message: '请输入学号' }]}
           >
-            <Input />
+            <Input disabled={!!form.getFieldValue('id')} />
           </Form.Item>
           <Form.Item name="class" label="班级" rules={[{ required: true, message: '请选择班级' }]}>
             <Select>
@@ -227,11 +328,58 @@ export default function StudentPage() {
           <Form.Item
             name="phone"
             label="手机号"
-            rules={[{ required: true, message: '请输入手机号' }]}
+            rules={[
+              { required: true, message: '请输入手机号' },
+              { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' },
+            ]}
           >
             <Input />
           </Form.Item>
-          <Form.Item name="email" label="邮箱" rules={[{ required: true, message: '请输入邮箱' }]}>
+          <Form.Item
+            name="email"
+            label="邮箱"
+            rules={[
+              { required: true, message: '请输入邮箱' },
+              { type: 'email', message: '请输入正确的邮箱格式' },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="编辑联系方式"
+        open={isContactModalVisible}
+        onOk={handleContactSubmit}
+        onCancel={() => {
+          setIsContactModalVisible(false);
+          contactForm.resetFields();
+        }}
+        confirmLoading={loading}
+      >
+        <Form form={contactForm} layout="vertical">
+          <Form.Item name="id" hidden>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="phone"
+            label="手机号"
+            rules={[
+              { required: true, message: '请输入手机号' },
+              { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="邮箱"
+            rules={[
+              { required: true, message: '请输入邮箱' },
+              { type: 'email', message: '请输入正确的邮箱格式' },
+            ]}
+          >
             <Input />
           </Form.Item>
         </Form>

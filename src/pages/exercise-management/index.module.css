@@ -1,11 +1,96 @@
 .container {
   padding: 24px;
+  height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
 }
 
-.container :global(.ant-card) {
+.card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  padding: 16px 24px;
+}
+
+.filterSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tableWrapper {
+  padding: 24px;
+  flex: 1;
+  overflow: auto;
+}
+
+.titleText {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modalWrapper :global(.ant-modal-body) {
+  padding: 24px;
+}
+
+.formWrapper {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+.formWrapper :global(.ant-form-item) {
   margin-bottom: 24px;
 }
 
-.container :global(.ant-table) {
-  margin-top: 16px;
+.previewContent {
+  padding: 24px;
+}
+
+.previewHeader {
+  margin-bottom: 24px;
+}
+
+.previewHeader h2 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.tagWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.previewDescription,
+.previewContent {
+  margin-bottom: 24px;
+}
+
+.previewDescription h3,
+.previewContent h3 {
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.contentBox {
+  padding: 16px;
+  border-radius: 4px;
+  min-height: 100px;
+}
+
+.previewDeadline h3 {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
 }

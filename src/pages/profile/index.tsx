@@ -1,5 +1,23 @@
-import { LockOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Card, Form, Input, Modal, Space, Upload, message } from 'antd';
+import {
+  LockOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  UploadOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import {
+  Avatar,
+  Button,
+  Card,
+  Form,
+  Input,
+  message,
+  Modal,
+  Space,
+  Spin,
+  Typography,
+  Upload,
+} from 'antd';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import styles from './index.module.css';
@@ -12,6 +30,11 @@ interface UserInfo {
   type: 'student' | 'teacher';
   avatarUrl: string | null;
   createdAt: string;
+  studentId?: string;
+  className?: string;
+  phone?: string;
+  email?: string;
+  name?: string;
 }
 
 export default function ProfilePage() {
@@ -23,6 +46,8 @@ export default function ProfilePage() {
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [passwordForm] = Form.useForm();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [contactForm] = Form.useForm();
+  const [contactModalVisible, setContactModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -30,6 +55,9 @@ export default function ProfilePage() {
 
       try {
         setLoading(true);
+        console.log('当前 session:', session);
+        console.log('用户类型:', session?.user?.type);
+
         const response = await fetch('/api/profile/user', {
           method: 'GET',
           headers: {
@@ -45,6 +73,7 @@ export default function ProfilePage() {
         }
 
         const data = await response.json();
+        console.log('获取到的用户信息:', data);
 
         // 设置头像
         if (data.avatarUrl) {
@@ -57,7 +86,39 @@ export default function ProfilePage() {
           username: data.username,
         });
 
-        setUserInfo(data);
+        // 如果是学生，从 students 表中获取学生信息
+        if (session?.user?.type === 'student') {
+          console.log('开始获取学生信息...');
+          const studentResponse = await fetch(
+            `/api/profile/student-info?userId=${session.user.id}`,
+          );
+          if (studentResponse.ok) {
+            const studentData = await studentResponse.json();
+            console.log('获取到的学生信息:', studentData);
+            // 设置学生信息
+            const userInfoData = {
+              ...data,
+              studentId: studentData.student_id,
+              className: studentData.class_name,
+              phone: studentData.phone,
+              email: studentData.email,
+              name: studentData.name,
+            };
+            console.log('设置的用户信息:', userInfoData);
+            setUserInfo(userInfoData);
+            // 设置联系方式表单的初始值
+            contactForm.setFieldsValue({
+              phone: studentData.phone,
+              email: studentData.email,
+            });
+          } else {
+            console.error('获取学生信息失败:', await studentResponse.text());
+            message.error('获取学生信息失败');
+          }
+        } else {
+          console.log('非学生用户，直接设置用户信息');
+          setUserInfo(data);
+        }
       } catch (error) {
         console.error('获取用户信息失败:', error);
         message.error({
@@ -71,7 +132,7 @@ export default function ProfilePage() {
     };
 
     fetchUserInfo();
-  }, [session, form]);
+  }, [session, form, contactForm]);
 
   const onFinish = async (values) => {
     try {
@@ -233,6 +294,66 @@ export default function ProfilePage() {
     }
   };
 
+  const handleContactSubmit = async (values) => {
+    try {
+      setLoading(true);
+      console.log('提交的联系方式:', values);
+
+      const response = await fetch('/api/profile/update-contact', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: values.phone,
+          email: values.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '更新联系方式失败');
+      }
+
+      const data = await response.json();
+      console.log('更新联系方式成功:', data);
+
+      setUserInfo({ ...userInfo!, phone: values.phone, email: values.email });
+      message.success('联系方式更新成功');
+      setContactModalVisible(false);
+    } catch (error) {
+      console.error('更新联系方式失败:', error);
+      message.error(error instanceof Error ? error.message : '更新联系方式失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <Card title="个人信息" className={styles.card}>
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: '16px' }}>加载中...</div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!userInfo) {
+    return (
+      <div className={styles.container}>
+        <Card title="个人信息" className={styles.card}>
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <Typography.Text type="danger">无法加载用户信息</Typography.Text>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <Card title="个人信息" className={styles.card}>
@@ -264,30 +385,71 @@ export default function ProfilePage() {
           </Upload>
         </div>
 
-        <Form form={form} layout="vertical" onFinish={onFinish} className={styles.form}>
-          <Form.Item
-            label="用户名"
-            name="username"
-            rules={[
-              { required: true, message: '请输入用户名' },
-              { min: 3, message: '用户名至少3个字符' },
-            ]}
-          >
-            <Input prefix={<UserOutlined />} placeholder="请输入用户名" />
-          </Form.Item>
-
-          <Form.Item>
-            <Space style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                保存修改
+        {session?.user?.type === 'student' ? (
+          <div className={styles.studentInfo}>
+            <Typography.Title level={4}>学生信息</Typography.Title>
+            <div className={styles.infoItem}>
+              <Typography.Text strong>姓名：</Typography.Text>
+              <Typography.Text>{userInfo.name || '未设置'}</Typography.Text>
+            </div>
+            <div className={styles.infoItem}>
+              <Typography.Text strong>学号：</Typography.Text>
+              <Typography.Text>{userInfo.studentId || '未设置'}</Typography.Text>
+            </div>
+            <div className={styles.infoItem}>
+              <Typography.Text strong>班级：</Typography.Text>
+              <Typography.Text>{userInfo.className || '未设置'}</Typography.Text>
+            </div>
+            <div className={styles.infoItem}>
+              <Typography.Text strong>联系电话：</Typography.Text>
+              <Typography.Text>{userInfo.phone || '未设置'}</Typography.Text>
+            </div>
+            <div className={styles.infoItem}>
+              <Typography.Text strong>电子邮箱：</Typography.Text>
+              <Typography.Text>{userInfo.email || '未设置'}</Typography.Text>
+            </div>
+            <div className={styles.buttonGroup}>
+              <Button
+                type="primary"
+                onClick={() => setContactModalVisible(true)}
+                icon={<PhoneOutlined />}
+              >
+                修改联系方式
               </Button>
-              <Button onClick={() => form.resetFields()}>重置</Button>
-              <Button type="primary" onClick={() => setPasswordModalVisible(true)}>
+              <Button
+                type="primary"
+                onClick={() => setPasswordModalVisible(true)}
+                style={{ marginLeft: 8 }}
+              >
                 修改密码
               </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+            </div>
+          </div>
+        ) : (
+          <Form form={form} layout="vertical" onFinish={onFinish} className={styles.form}>
+            <Form.Item
+              label="用户名"
+              name="username"
+              rules={[
+                { required: true, message: '请输入用户名' },
+                { min: 3, message: '用户名至少3个字符' },
+              ]}
+            >
+              <Input prefix={<UserOutlined />} placeholder="请输入用户名" />
+            </Form.Item>
+
+            <Form.Item>
+              <Space style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  保存修改
+                </Button>
+                <Button type="primary" onClick={() => setPasswordModalVisible(true)}>
+                  修改密码
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        )}
       </Card>
 
       <Modal
@@ -298,7 +460,7 @@ export default function ProfilePage() {
           passwordForm.resetFields();
         }}
         footer={null}
-        className={styles.modal}
+        className={styles.modalContent}
       >
         <Form form={passwordForm} layout="vertical" onFinish={handlePasswordSubmit}>
           <Form.Item
@@ -352,6 +514,45 @@ export default function ProfilePage() {
               >
                 取消
               </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="修改联系方式"
+        open={contactModalVisible}
+        onCancel={() => setContactModalVisible(false)}
+        footer={null}
+        className={styles.modalContent}
+      >
+        <Form form={contactForm} onFinish={handleContactSubmit} layout="vertical">
+          <Form.Item
+            name="phone"
+            label="联系电话"
+            rules={[
+              { required: true, message: '请输入手机号码' },
+              { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码' },
+            ]}
+          >
+            <Input prefix={<PhoneOutlined />} placeholder="请输入手机号码" />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="电子邮箱"
+            rules={[
+              { required: true, message: '请输入邮箱地址' },
+              { type: 'email', message: '请输入有效的邮箱地址' },
+            ]}
+          >
+            <Input prefix={<MailOutlined />} placeholder="请输入邮箱地址" />
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                保存修改
+              </Button>
+              <Button onClick={() => setContactModalVisible(false)}>取消</Button>
             </Space>
           </Form.Item>
         </Form>

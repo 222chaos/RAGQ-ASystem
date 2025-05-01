@@ -58,7 +58,7 @@ export default function Register() {
   return (
     <div className={styles.container}>
       <div className={styles.authBox}>
-        <h1>教师注册</h1>
+        <h1>注册</h1>
         <Form form={form} name="register" onFinish={handleSubmit} layout="vertical">
           <Form.Item
             name="username"
@@ -67,7 +67,7 @@ export default function Register() {
               { min: 3, message: '用户名至少3个字符' },
             ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="用户名" size="large" />
+            <Input prefix={<UserOutlined />} placeholder="账号" size="large" />
           </Form.Item>
 
           <Form.Item

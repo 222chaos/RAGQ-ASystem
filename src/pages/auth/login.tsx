@@ -48,7 +48,7 @@ export default function Login() {
           initialValues={{ userType: 'student' }}
         >
           <Form.Item name="username" rules={[{ required: true, message: '请输入用户名' }]}>
-            <Input prefix={<UserOutlined />} placeholder="用户名" size="large" />
+            <Input prefix={<UserOutlined />} placeholder="账号" size="large" />
           </Form.Item>
 
           <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>

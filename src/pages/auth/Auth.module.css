@@ -3,21 +3,32 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f0f2f5;
 }
 
 .authBox {
-  width: 400px;
-  padding: 40px;
-  background: white;
+  background: var(--ant-color-bg-container);
+  padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--ant-color-border);
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .authBox {
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(235, 47, 150, 0.2);
 }
 
 .authBox h1 {
   text-align: center;
-  margin-bottom: 24px;
-  color: #1890ff;
+  margin-bottom: 2rem;
+  color: var(--ant-color-text);
 }
 
 .formGroup {
@@ -99,12 +110,12 @@
 
 .switchAuth {
   text-align: center;
-  margin-top: 16px;
-  color: rgba(0, 0, 0, 0.45);
+  margin-top: 1rem;
+  color: var(--ant-color-text);
 }
 
 .switchAuth a {
-  color: #1890ff;
+  color: var(--ant-color-primary);
   text-decoration: none;
 }
 
