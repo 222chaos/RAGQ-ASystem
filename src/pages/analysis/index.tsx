@@ -8,6 +8,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { Card, Col, Row, Statistic } from 'antd';
+import { useSession } from 'next-auth/react';
 import React from 'react';
 import styles from './index.module.css';
 
@@ -418,7 +419,8 @@ const StudentView: React.FC<{ data: StudentData }> = ({ data }) => (
 );
 
 const AnalysisPage: React.FC = () => {
-  const userType = localStorage.getItem('userType') || 'student';
+  const { data: session } = useSession();
+  const userType = session?.user?.type || 'student';
   const data = getMockData(userType);
 
   return (
