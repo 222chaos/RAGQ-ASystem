@@ -5,6 +5,9 @@ const nextConfig = {
     '@ant-design/pro-chat',
     'react-intersection-observer',
     '@ant-design/pro-editor',
+    'antd',
+    '@ant-design/x',
+    '@ant-design/icons',
   ],
 };
 

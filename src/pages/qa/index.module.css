@@ -4,6 +4,23 @@
   max-width: 80vw;
   margin: 0 auto;
   padding: 20px;
+  text-align: center;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.content {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.slick-center {
+  margin: 0 auto;
+  width: 90%;
 }
 
 .slider-item {
@@ -12,6 +29,11 @@
   overflow: hidden;
   width: 80%;
   padding: 42px;
+  margin: 0 auto;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .center img {
@@ -41,12 +63,18 @@
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .leftArrow {
-  left: -2%;
+  left: 0;
 }
 
 .rightArrow {
-  right: 4%;
+  right: 0;
 }

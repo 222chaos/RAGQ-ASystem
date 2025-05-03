@@ -43,3 +43,21 @@ CREATE TABLE IF NOT EXISTS exercises (
 -- 创建练习表索引
 CREATE INDEX IF NOT EXISTS idx_exercises_teacher_id ON exercises(teacher_user_id);
 CREATE INDEX IF NOT EXISTS idx_exercises_status ON exercises(status);
+
+-- 创建聊天记录表
+CREATE TABLE IF NOT EXISTS chat_records (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    record_id VARCHAR(50) NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    feedback_type VARCHAR(10) CHECK (feedback_type IN ('like', 'dislike', NULL)),
+    feedback_content TEXT,
+    feedback_rating INTEGER CHECK (feedback_rating BETWEEN 1 AND 5),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建聊天记录表索引
+CREATE INDEX IF NOT EXISTS idx_chat_records_user_id ON chat_records(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_records_record_id ON chat_records(record_id);

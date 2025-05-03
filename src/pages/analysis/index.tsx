@@ -2,21 +2,24 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
+  FileDoneOutlined,
+  FileOutlined,
+  FileTextOutlined,
+  LoadingOutlined,
   MessageOutlined,
-  StarOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Row, Statistic } from 'antd';
+import { Badge, Button, Card, Col, Collapse, List, Row, Spin, Statistic, Table } from 'antd';
+// @ts-ignore
+import ReactECharts from 'echarts-for-react';
 import { useSession } from 'next-auth/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 interface BaseStats {
   totalQuestions: number;
   answeredQuestions: number;
-  averageResponseTime: number;
-  satisfactionRate: number;
   recentQuestions: Array<{
     question: string;
     status: string;
@@ -28,17 +31,19 @@ interface BaseStats {
     count: number;
     percentage: number;
   }>;
-  ragStats: {
-    totalDocuments: number;
-    averageRetrievalTime: number;
-    retrievalAccuracy: number;
-    knowledgeCoverage: number;
-    recentImprovements: Array<{
-      type: string;
-      description: string;
-      time: string;
-    }>;
+  exerciseStats: {
+    totalExercises: number;
+    publishedExercises: number;
+    draftExercises: number;
+    expiredExercises: number;
+    completedExercises: number;
+    overdueExercises: number;
   };
+  exerciseDifficulty: Array<{
+    difficulty: string;
+    count: number;
+    percentage: number;
+  }>;
   analysisSuggestions: {
     questionPatterns: Array<{
       category: string;
@@ -59,13 +64,14 @@ interface TeacherData extends BaseStats {
   analysisSuggestions: BaseStats['analysisSuggestions'] & {
     teachingSuggestions: string[];
   };
+  deepAnalysis?: string;
 }
 
 interface StudentData extends BaseStats {
   studentStats: {
-    totalStudyTime: number;
-    completedCourses: number;
-    averageScore: number;
+    totalStudySessions: number;
+    studiedSubjects: number;
+    completedExercises: number;
     studyProgress: number;
   };
   analysisSuggestions: BaseStats['analysisSuggestions'] & {
@@ -77,351 +83,629 @@ interface StudentData extends BaseStats {
       examples: string[];
     }>;
   };
+  deepAnalysis?: string;
 }
 
-const getMockData = (userType: string): TeacherData | StudentData => {
-  const teacherData: TeacherData = {
-    totalQuestions: 320,
-    answeredQuestions: 300,
-    averageResponseTime: 20,
-    satisfactionRate: 95,
-    recentQuestions: [
-      {
-        question: '如何设计高效的需求分析流程？',
-        status: '已解答',
-        time: '2024-01-05 09:00',
-        category: '需求工程',
-      },
-      {
-        question: '操作系统实验考核标准是什么？',
-        status: '已解答',
-        time: '2024-01-04 15:30',
-        category: '操作系统',
-      },
-      {
-        question: '网络安全课程有哪些重点？',
-        status: '待解答',
-        time: '2024-01-03 11:20',
-        category: '计算机网络',
-      },
-    ],
-    categoryStats: [
-      { name: '需求工程', count: 120, percentage: 37 },
-      { name: '操作系统', count: 100, percentage: 31 },
-      { name: '计算机网络', count: 100, percentage: 32 },
-    ],
-    teacherStats: {
-      totalStudents: 80,
-      activeStudents: 65,
-      avgScore: 88,
-      classSatisfaction: 92,
-    },
-    ragStats: {
-      totalDocuments: 1500,
-      averageRetrievalTime: 0.8,
-      retrievalAccuracy: 92,
-      knowledgeCoverage: 85,
-      recentImprovements: [
-        {
-          type: '知识库更新',
-          description: '新增操作系统相关文档50篇',
-          time: '2024-01-04',
-        },
-        {
-          type: '模型优化',
-          description: '优化了检索算法，提升准确率2%',
-          time: '2024-01-03',
-        },
-      ],
-    },
-    analysisSuggestions: {
-      questionPatterns: [
-        {
-          category: '需求工程',
-          pattern: '需求分析方法和流程',
-          count: 45,
-          percentage: 37.5,
-        },
-        {
-          category: '操作系统',
-          pattern: '进程调度和内存管理',
-          count: 30,
-          percentage: 25,
-        },
-        {
-          category: '计算机网络',
-          pattern: 'TCP/IP协议和网络安全',
-          count: 25,
-          percentage: 20.8,
-        },
-      ],
-      teachingSuggestions: [
-        '需求工程类问题占比最高，建议在课堂上增加实际案例分析',
-        '操作系统相关问题的响应时间较长，建议录制专题讲解视频',
-        '网络安全类问题准确率较低，建议更新相关教学资料',
-      ],
-    },
+const TeacherView: React.FC<{ data: TeacherData }> = ({ data }) => {
+  const [deepAnalysis, setDeepAnalysis] = useState<string | null>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
+  const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
+
+  const fetchDeepAnalysis = async () => {
+    try {
+      setLoadingAnalysis(true);
+      const response = await fetch('/api/analysis/deep-analysis');
+      if (!response.ok) {
+        throw new Error('获取深度分析失败');
+      }
+      const responseData = await response.json();
+      setDeepAnalysis(responseData.analysis);
+      setShowAnalysis(true);
+    } catch (error) {
+      console.error('获取深度分析失败:', error);
+    } finally {
+      setLoadingAnalysis(false);
+    }
   };
 
-  const studentData: StudentData = {
-    totalQuestions: 150,
-    answeredQuestions: 120,
-    averageResponseTime: 30,
-    satisfactionRate: 90,
-    recentQuestions: [
-      {
-        question: '需求工程中的需求分析有哪些方法？',
-        status: '已解答',
-        time: '2024-01-01 10:00',
-        category: '需求工程',
-      },
-      {
-        question: '操作系统的进程调度算法有哪些？',
-        status: '待解答',
-        time: '2024-01-02 14:30',
-        category: '操作系统',
-      },
-      {
-        question: 'TCP和UDP的区别是什么？',
-        status: '已解答',
-        time: '2024-01-03 09:15',
-        category: '计算机网络',
-      },
-    ],
-    categoryStats: [
-      { name: '需求工程', count: 50, percentage: 33 },
-      { name: '操作系统', count: 45, percentage: 30 },
-      { name: '计算机网络', count: 55, percentage: 37 },
-    ],
-    studentStats: {
-      totalStudyTime: 120,
-      completedCourses: 3,
-      averageScore: 85,
-      studyProgress: 75,
-    },
-    ragStats: {
-      totalDocuments: 1500,
-      averageRetrievalTime: 0.8,
-      retrievalAccuracy: 92,
-      knowledgeCoverage: 85,
-      recentImprovements: [
-        {
-          type: '知识库更新',
-          description: '新增操作系统相关文档50篇',
-          time: '2024-01-04',
-        },
-        {
-          type: '模型优化',
-          description: '优化了检索算法，提升准确率2%',
-          time: '2024-01-03',
-        },
-      ],
-    },
-    analysisSuggestions: {
-      questionPatterns: [
-        {
-          category: '需求工程',
-          pattern: '需求分析方法和流程',
-          count: 20,
-          percentage: 40,
-        },
-        {
-          category: '操作系统',
-          pattern: '进程调度和内存管理',
-          count: 15,
-          percentage: 30,
-        },
-        {
-          category: '计算机网络',
-          pattern: 'TCP/IP协议和网络安全',
-          count: 10,
-          percentage: 20,
-        },
-      ],
-      learningSuggestions: [
-        '需求工程类问题较多，建议加强相关课程的学习，特别是需求分析方法和工具的使用',
-        '操作系统相关问题的准确率较低，建议复习进程调度和内存管理的核心概念',
-        '网络安全类问题较少，建议多关注该领域的学习，特别是常见的安全威胁和防护措施',
-      ],
-      questionAnalysis: [
-        {
-          type: '概念理解类',
-          count: 25,
-          percentage: 50,
-          examples: ['什么是需求工程？', '进程和线程的区别是什么？', 'TCP三次握手的过程是怎样的？'],
-        },
-        {
-          type: '实践应用类',
-          count: 15,
-          percentage: 30,
-          examples: ['如何编写需求规格说明书？', '如何实现进程调度算法？', '如何配置网络防火墙？'],
-        },
-        {
-          type: '问题解决类',
-          count: 10,
-          percentage: 20,
-          examples: ['如何处理需求变更？', '如何解决死锁问题？', '如何排查网络故障？'],
-        },
-      ],
-    },
-  };
+  return (
+    <div style={{ padding: '24px' }}>
+      <Row gutter={[16, 16]}>
+        <Col span={6}>
+          <Card>
+            <Statistic title="总提问数" value={data.totalQuestions} prefix={<MessageOutlined />} />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="已回答问题"
+              value={data.answeredQuestions}
+              prefix={<CheckCircleOutlined />}
+              suffix={
+                data.totalQuestions > 0
+                  ? `(${Math.round((data.answeredQuestions / data.totalQuestions) * 100)}%)`
+                  : ''
+              }
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="创建的练习总数"
+              value={data.exerciseStats.totalExercises}
+              prefix={<FileOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="当前进行中练习"
+              value={data.exerciseStats.publishedExercises - data.exerciseStats.expiredExercises}
+              prefix={<FileDoneOutlined />}
+              suffix={
+                data.exerciseStats.totalExercises > 0
+                  ? `(${Math.round(((data.exerciseStats.publishedExercises - data.exerciseStats.expiredExercises) / data.exerciseStats.totalExercises) * 100)}%)`
+                  : ''
+              }
+            />
+          </Card>
+        </Col>
+      </Row>
 
-  return userType === 'teacher' ? teacherData : studentData;
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="学生总数"
+              value={data.teacherStats.totalStudents}
+              prefix={<TeamOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="近30天活跃学生"
+              value={data.teacherStats.activeStudents}
+              prefix={<UserOutlined />}
+              suffix={
+                data.teacherStats.totalStudents > 0
+                  ? `(${Math.round((data.teacherStats.activeStudents / data.teacherStats.totalStudents) * 100)}%)`
+                  : ''
+              }
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="草稿练习"
+              value={data.exerciseStats.draftExercises}
+              prefix={<FileTextOutlined />}
+              suffix={
+                data.exerciseStats.totalExercises > 0
+                  ? `(${Math.round((data.exerciseStats.draftExercises / data.exerciseStats.totalExercises) * 100)}%)`
+                  : ''
+              }
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        <Col span={12}>
+          <Card title="问题分类统计">
+            <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: 'item',
+                  formatter: '{a} <br/>{b}: {c} ({d}%)',
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 10,
+                  data: data.categoryStats.map((item) => item.name),
+                },
+                series: [
+                  {
+                    name: '问题分类',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                      show: false,
+                      position: 'center',
+                    },
+                    emphasis: {
+                      label: {
+                        show: true,
+                        fontSize: '16',
+                        fontWeight: 'bold',
+                      },
+                    },
+                    labelLine: {
+                      show: false,
+                    },
+                    data: data.categoryStats.map((item) => ({
+                      value: item.count,
+                      name: item.name,
+                    })),
+                  },
+                ],
+              }}
+              style={{ height: '300px' }}
+            />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="练习难度分布">
+            <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: 'item',
+                  formatter: '{a} <br/>{b}: {c} ({d}%)',
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 10,
+                  data: data.exerciseDifficulty.map((item) => item.difficulty),
+                },
+                series: [
+                  {
+                    name: '难度分布',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                      show: false,
+                      position: 'center',
+                    },
+                    emphasis: {
+                      label: {
+                        show: true,
+                        fontSize: '16',
+                        fontWeight: 'bold',
+                      },
+                    },
+                    labelLine: {
+                      show: false,
+                    },
+                    data: data.exerciseDifficulty.map((item) => ({
+                      value: item.count,
+                      name: item.difficulty,
+                    })),
+                  },
+                ],
+              }}
+              style={{ height: '300px' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        <Col span={12}>
+          <Card title="教学建议">
+            <List
+              size="small"
+              dataSource={data.analysisSuggestions.teachingSuggestions}
+              renderItem={(item: string) => (
+                <List.Item>
+                  <Badge status="processing" text={String(item)} />
+                </List.Item>
+              )}
+            />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="最近问题">
+            <Table
+              dataSource={data.recentQuestions.map((q, index) => ({ ...q, key: index }))}
+              columns={[
+                {
+                  title: '问题',
+                  dataIndex: 'question',
+                  key: 'question',
+                  ellipsis: true,
+                },
+                {
+                  title: '状态',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (status) => (
+                    <Badge status={status === '已解答' ? 'success' : 'processing'} text={status} />
+                  ),
+                },
+                {
+                  title: '分类',
+                  dataIndex: 'category',
+                  key: 'category',
+                },
+              ]}
+              pagination={false}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 深度分析部分 */}
+      <Row style={{ marginTop: '24px' }}>
+        <Col span={24}>
+          <Card
+            title="深度教学分析"
+            extra={
+              !showAnalysis ? (
+                <Button type="primary" onClick={fetchDeepAnalysis} loading={loadingAnalysis}>
+                  {loadingAnalysis ? '分析中...' : '获取深度分析'}
+                </Button>
+              ) : null
+            }
+          >
+            {loadingAnalysis ? (
+              <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                <p style={{ marginTop: '20px' }}>正在进行深度分析，这可能需要一些时间...</p>
+              </div>
+            ) : showAnalysis && deepAnalysis ? (
+              <div className={styles.analysisSection}>
+                <Collapse defaultActiveKey={['1']}>
+                  <Collapse.Panel header="教学分析结果" key="1">
+                    {deepAnalysis.split('\n\n').map((paragraph, index) => (
+                      <div key={index} style={{ marginBottom: '16px' }}>
+                        {paragraph.split('\n').map((line, lineIndex) => (
+                          <p
+                            key={lineIndex}
+                            style={line.startsWith('#') ? { fontWeight: 'bold' } : {}}
+                          >
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    ))}
+                  </Collapse.Panel>
+                </Collapse>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                <p>
+                  点击"获取深度分析"按钮，系统将结合学生数据、问题类型和练习情况，为您提供详细的教学建议。
+                </p>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
 };
 
-const TeacherView: React.FC<{ data: TeacherData }> = ({ data }) => (
-  <div style={{ padding: '24px' }}>
-    <Row gutter={[16, 16]}>
-      <Col span={6}>
-        <Card>
-          <Statistic title="总提问数" value={data.totalQuestions} prefix={<MessageOutlined />} />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="已回答问题"
-            value={data.answeredQuestions}
-            prefix={<CheckCircleOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="平均响应时间"
-            value={data.averageResponseTime}
-            suffix="分钟"
-            prefix={<ClockCircleOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="满意度"
-            value={data.satisfactionRate}
-            suffix="%"
-            prefix={<StarOutlined />}
-          />
-        </Card>
-      </Col>
-    </Row>
+const StudentView: React.FC<{ data: StudentData }> = ({ data }) => {
+  const [deepAnalysis, setDeepAnalysis] = useState<string | null>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
+  const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
 
-    <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="学生总数"
-            value={data.teacherStats.totalStudents}
-            prefix={<TeamOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="活跃学生"
-            value={data.teacherStats.activeStudents}
-            prefix={<UserOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="班级平均分"
-            value={data.teacherStats.avgScore}
-            suffix="分"
-            prefix={<StarOutlined />}
-          />
-        </Card>
-      </Col>
-    </Row>
+  const fetchDeepAnalysis = async () => {
+    try {
+      setLoadingAnalysis(true);
+      const response = await fetch('/api/analysis/deep-analysis');
+      if (!response.ok) {
+        throw new Error('获取深度分析失败');
+      }
+      const responseData = await response.json();
+      setDeepAnalysis(responseData.analysis);
+      setShowAnalysis(true);
+    } catch (error) {
+      console.error('获取深度分析失败:', error);
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  };
 
-    {/* 其他教师视图内容 */}
-  </div>
-);
+  return (
+    <div style={{ padding: '24px' }}>
+      <Row gutter={[16, 16]}>
+        <Col span={8}>
+          <Card>
+            <Statistic title="总提问数" value={data.totalQuestions} prefix={<MessageOutlined />} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="已回答问题"
+              value={data.answeredQuestions}
+              prefix={<CheckCircleOutlined />}
+              suffix={
+                data.totalQuestions > 0
+                  ? `(${Math.round((data.answeredQuestions / data.totalQuestions) * 100)}%)`
+                  : ''
+              }
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="可做的练习总数"
+              value={data.exerciseStats.totalExercises}
+              prefix={<FileOutlined />}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-const StudentView: React.FC<{ data: StudentData }> = ({ data }) => (
-  <div style={{ padding: '24px' }}>
-    <Row gutter={[16, 16]}>
-      <Col span={6}>
-        <Card>
-          <Statistic title="总提问数" value={data.totalQuestions} prefix={<MessageOutlined />} />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="已回答问题"
-            value={data.answeredQuestions}
-            prefix={<CheckCircleOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="平均响应时间"
-            value={data.averageResponseTime}
-            suffix="分钟"
-            prefix={<ClockCircleOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="满意度"
-            value={data.satisfactionRate}
-            suffix="%"
-            prefix={<StarOutlined />}
-          />
-        </Card>
-      </Col>
-    </Row>
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        <Col span={12}>
+          <Card>
+            <Statistic
+              title="学习次数"
+              value={data.studentStats.totalStudySessions}
+              prefix={<ClockCircleOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card>
+            <Statistic
+              title="学习科目数"
+              value={data.studentStats.studiedSubjects}
+              prefix={<BookOutlined />}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-    <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="总学习时长"
-            value={data.studentStats.totalStudyTime}
-            suffix="小时"
-            prefix={<ClockCircleOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="已完成课程"
-            value={data.studentStats.completedCourses}
-            prefix={<BookOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="平均分数"
-            value={data.studentStats.averageScore}
-            suffix="分"
-            prefix={<StarOutlined />}
-          />
-        </Card>
-      </Col>
-    </Row>
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        <Col span={12}>
+          <Card title="问题分类统计">
+            <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: 'item',
+                  formatter: '{a} <br/>{b}: {c} ({d}%)',
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 10,
+                  data: data.categoryStats.map((item) => item.name),
+                },
+                series: [
+                  {
+                    name: '问题分类',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                      show: false,
+                      position: 'center',
+                    },
+                    emphasis: {
+                      label: {
+                        show: true,
+                        fontSize: '16',
+                        fontWeight: 'bold',
+                      },
+                    },
+                    labelLine: {
+                      show: false,
+                    },
+                    data: data.categoryStats.map((item) => ({
+                      value: item.count,
+                      name: item.name,
+                    })),
+                  },
+                ],
+              }}
+              style={{ height: '300px' }}
+            />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="学习建议">
+            <div style={{ padding: '20px' }}>
+              <List
+                size="small"
+                dataSource={data.analysisSuggestions.learningSuggestions}
+                renderItem={(item: unknown) => (
+                  <List.Item>
+                    <Badge status="processing" text={String(item)} />
+                  </List.Item>
+                )}
+              />
+            </div>
+          </Card>
+        </Col>
+      </Row>
 
-    {/* 其他学生视图内容 */}
-  </div>
-);
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        <Col span={12}>
+          <Card title="练习难度分布">
+            <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: 'item',
+                  formatter: '{a} <br/>{b}: {c} ({d}%)',
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 10,
+                  data: data.exerciseDifficulty.map((item) => item.difficulty),
+                },
+                series: [
+                  {
+                    name: '难度分布',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                      show: false,
+                      position: 'center',
+                    },
+                    emphasis: {
+                      label: {
+                        show: true,
+                        fontSize: '16',
+                        fontWeight: 'bold',
+                      },
+                    },
+                    labelLine: {
+                      show: false,
+                    },
+                    data: data.exerciseDifficulty.map((item) => ({
+                      value: item.count,
+                      name: item.difficulty,
+                    })),
+                  },
+                ],
+              }}
+              style={{ height: '300px' }}
+            />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="问题类型分析">
+            <Table
+              dataSource={data.analysisSuggestions.questionAnalysis.map((item, index) => ({
+                key: index,
+                ...item,
+              }))}
+              columns={[
+                {
+                  title: '问题类型',
+                  dataIndex: 'type',
+                  key: 'type',
+                },
+                {
+                  title: '数量',
+                  dataIndex: 'count',
+                  key: 'count',
+                },
+                {
+                  title: '占比',
+                  dataIndex: 'percentage',
+                  key: 'percentage',
+                  render: (percentage) => `${percentage}%`,
+                },
+              ]}
+              pagination={false}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 深度分析部分 */}
+      <Row style={{ marginTop: '24px' }}>
+        <Col span={24}>
+          <Card
+            title="个性化学习分析"
+            extra={
+              !showAnalysis ? (
+                <Button type="primary" onClick={fetchDeepAnalysis} loading={loadingAnalysis}>
+                  {loadingAnalysis ? '分析中...' : '获取学习分析'}
+                </Button>
+              ) : null
+            }
+          >
+            {loadingAnalysis ? (
+              <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                <p style={{ marginTop: '20px' }}>正在进行个性化学习分析，这可能需要一些时间...</p>
+              </div>
+            ) : showAnalysis && deepAnalysis ? (
+              <div className={styles.analysisSection}>
+                <Collapse defaultActiveKey={['1']}>
+                  <Collapse.Panel header="个性化学习建议" key="1">
+                    {deepAnalysis.split('\n\n').map((paragraph, index) => (
+                      <div key={index} style={{ marginBottom: '16px' }}>
+                        {paragraph.split('\n').map((line, lineIndex) => (
+                          <p
+                            key={lineIndex}
+                            style={
+                              line.startsWith('#') || line.match(/^\d+\./)
+                                ? { fontWeight: 'bold', marginTop: '12px' }
+                                : {}
+                            }
+                          >
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    ))}
+                  </Collapse.Panel>
+                </Collapse>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                <p>
+                  点击"获取学习分析"按钮，系统将分析您的学习数据，为您提供个性化的学习建议和规划。
+                </p>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
+};
 
 const AnalysisPage: React.FC = () => {
   const { data: session } = useSession();
   const userType = session?.user?.type || 'student';
-  const data = getMockData(userType);
+  const [data, setData] = useState<TeacherData | StudentData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchAnalysisData = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        setLoading(true);
+        const response = await fetch('/api/analysis/data');
+        if (!response.ok) {
+          throw new Error('获取分析数据失败');
+        }
+        const responseData = await response.json();
+        setData(responseData);
+      } catch (error) {
+        console.error('获取分析数据失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalysisData();
+  }, [session]);
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '50vh',
+          }}
+        >
+          <Spin size="large" tip="正在加载数据..." />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className={styles.container}>
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+          <h2>无法获取分析数据</h2>
+          <p>请稍后再试或联系管理员</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
