@@ -1,4 +1,4 @@
-import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, message, Modal } from 'antd';
 import React, { useState } from 'react';
@@ -94,11 +94,11 @@ const KnowledgePage: React.FC = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
+      {/* <div style={{ marginBottom: 16 }}>
         <Button type="primary" icon={<UploadOutlined />} loading={uploading} onClick={handleUpload}>
           上传文件
         </Button>
-      </div>
+      </div> */}
       <ProTable
         columns={columns}
         dataSource={dataSource}
