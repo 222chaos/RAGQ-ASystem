@@ -1,4 +1,4 @@
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, message, Modal } from 'antd';
 import React, { useState } from 'react';
@@ -29,6 +29,29 @@ const generateMockKnowledge = () => {
 
 const KnowledgePage: React.FC = () => {
   const [dataSource, setDataSource] = useState(generateMockKnowledge());
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async () => {
+    try {
+      setUploading(true);
+      const response = await fetch('/api/ow', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('上传失败');
+      }
+
+      const data = await response.json();
+      message.success('上传成功');
+      return data;
+    } catch (error) {
+      message.error('上传失败');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const columns = [
     {
@@ -71,6 +94,11 @@ const KnowledgePage: React.FC = () => {
 
   return (
     <div>
+      <div style={{ marginBottom: 16 }}>
+        <Button type="primary" icon={<UploadOutlined />} loading={uploading} onClick={handleUpload}>
+          上传文件
+        </Button>
+      </div>
       <ProTable
         columns={columns}
         dataSource={dataSource}
