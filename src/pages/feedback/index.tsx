@@ -243,7 +243,7 @@ const FeedbackPage: React.FC = () => {
               <div
                 style={{
                   padding: 16,
-                  background: '#f5f5f5',
+
                   borderRadius: 8,
                   marginBottom: 16,
                 }}
@@ -256,7 +256,7 @@ const FeedbackPage: React.FC = () => {
               <div
                 style={{
                   padding: 16,
-                  background: '#f0f9ff',
+
                   borderRadius: 8,
                 }}
               >

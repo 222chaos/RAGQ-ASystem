@@ -1,7 +1,10 @@
 import {
+  EditOutlined,
+  IdcardOutlined,
   LockOutlined,
   MailOutlined,
   PhoneOutlined,
+  TeamOutlined,
   UploadOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -9,12 +12,14 @@ import {
   Avatar,
   Button,
   Card,
+  Divider,
   Form,
   Input,
   message,
   Modal,
   Space,
   Spin,
+  Tooltip,
   Typography,
   Upload,
 } from 'antd';
@@ -333,9 +338,9 @@ export default function ProfilePage() {
     return (
       <div className={styles.container}>
         <Card title="个人信息" className={styles.card}>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
             <Spin size="large" />
-            <div style={{ marginTop: '16px' }}>加载中...</div>
+            <div style={{ marginTop: '16px', opacity: 0.7 }}>加载用户信息中...</div>
           </div>
         </Card>
       </div>
@@ -346,8 +351,10 @@ export default function ProfilePage() {
     return (
       <div className={styles.container}>
         <Card title="个人信息" className={styles.card}>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <Typography.Text type="danger">无法加载用户信息</Typography.Text>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <Typography.Text type="danger" style={{ fontSize: '16px' }}>
+              无法加载用户信息，请刷新页面重试
+            </Typography.Text>
           </div>
         </Card>
       </div>
@@ -356,10 +363,17 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <Card title="个人信息" className={styles.card}>
+      <Card
+        title={
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            个人信息
+          </Typography.Title>
+        }
+        className={styles.card}
+      >
         <div className={styles.avatarSection}>
           <Avatar
-            size={120}
+            size={140}
             src={avatarUrl || undefined}
             icon={<UserOutlined />}
             className={styles.avatar}
@@ -375,51 +389,75 @@ export default function ProfilePage() {
             customRequest={customUpload}
             disabled={uploading || loading}
           >
-            <Button
-              icon={<UploadOutlined />}
-              className={styles.uploadButton}
-              loading={uploading || loading}
-            >
-              {uploading ? '上传中...' : '更换头像'}
-            </Button>
+            <Tooltip title="支持jpg、png格式，最大2MB">
+              <Button
+                icon={<UploadOutlined />}
+                className={styles.uploadButton}
+                loading={uploading || loading}
+              >
+                {uploading ? '上传中...' : '更换头像'}
+              </Button>
+            </Tooltip>
           </Upload>
         </div>
 
         {session?.user?.type === 'student' ? (
           <div className={styles.studentInfo}>
             <Typography.Title level={4}>学生信息</Typography.Title>
+            <Divider style={{ margin: '16px 0 24px' }} />
+
             <div className={styles.infoItem}>
-              <Typography.Text strong>姓名：</Typography.Text>
+              <Space>
+                <UserOutlined />
+                <Typography.Text strong>姓名</Typography.Text>
+              </Space>
               <Typography.Text>{userInfo.name || '未设置'}</Typography.Text>
             </div>
+
             <div className={styles.infoItem}>
-              <Typography.Text strong>学号：</Typography.Text>
+              <Space>
+                <IdcardOutlined />
+                <Typography.Text strong>学号</Typography.Text>
+              </Space>
               <Typography.Text>{userInfo.studentId || '未设置'}</Typography.Text>
             </div>
+
             <div className={styles.infoItem}>
-              <Typography.Text strong>班级：</Typography.Text>
+              <Space>
+                <TeamOutlined />
+                <Typography.Text strong>班级</Typography.Text>
+              </Space>
               <Typography.Text>{userInfo.className || '未设置'}</Typography.Text>
             </div>
+
             <div className={styles.infoItem}>
-              <Typography.Text strong>联系电话：</Typography.Text>
+              <Space>
+                <PhoneOutlined />
+                <Typography.Text strong>联系电话</Typography.Text>
+              </Space>
               <Typography.Text>{userInfo.phone || '未设置'}</Typography.Text>
             </div>
+
             <div className={styles.infoItem}>
-              <Typography.Text strong>电子邮箱：</Typography.Text>
+              <Space>
+                <MailOutlined />
+                <Typography.Text strong>电子邮箱</Typography.Text>
+              </Space>
               <Typography.Text>{userInfo.email || '未设置'}</Typography.Text>
             </div>
+
             <div className={styles.buttonGroup}>
               <Button
                 type="primary"
                 onClick={() => setContactModalVisible(true)}
-                icon={<PhoneOutlined />}
+                icon={<EditOutlined />}
               >
                 修改联系方式
               </Button>
               <Button
                 type="primary"
                 onClick={() => setPasswordModalVisible(true)}
-                style={{ marginLeft: 8 }}
+                icon={<LockOutlined />}
               >
                 修改密码
               </Button>
@@ -439,11 +477,22 @@ export default function ProfilePage() {
             </Form.Item>
 
             <Form.Item>
-              <Space style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <Button type="primary" htmlType="submit" loading={loading}>
+              <Space
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  width: '100%',
+                  marginTop: '16px',
+                }}
+              >
+                <Button type="primary" htmlType="submit" loading={loading} icon={<EditOutlined />}>
                   保存修改
                 </Button>
-                <Button type="primary" onClick={() => setPasswordModalVisible(true)}>
+                <Button
+                  type="primary"
+                  onClick={() => setPasswordModalVisible(true)}
+                  icon={<LockOutlined />}
+                >
                   修改密码
                 </Button>
               </Space>
@@ -453,7 +502,11 @@ export default function ProfilePage() {
       </Card>
 
       <Modal
-        title="修改密码"
+        title={
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            修改密码
+          </Typography.Title>
+        }
         open={passwordModalVisible}
         onCancel={() => {
           setPasswordModalVisible(false);
@@ -461,6 +514,7 @@ export default function ProfilePage() {
         }}
         footer={null}
         className={styles.modalContent}
+        maskClosable={false}
       >
         <Form form={passwordForm} layout="vertical" onFinish={handlePasswordSubmit}>
           <Form.Item
@@ -502,10 +556,7 @@ export default function ProfilePage() {
           </Form.Item>
 
           <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                确认修改
-              </Button>
+            <Space style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
               <Button
                 onClick={() => {
                   setPasswordModalVisible(false);
@@ -514,17 +565,25 @@ export default function ProfilePage() {
               >
                 取消
               </Button>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                确认修改
+              </Button>
             </Space>
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title="修改联系方式"
+        title={
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            修改联系方式
+          </Typography.Title>
+        }
         open={contactModalVisible}
         onCancel={() => setContactModalVisible(false)}
         footer={null}
         className={styles.modalContent}
+        maskClosable={false}
       >
         <Form form={contactForm} onFinish={handleContactSubmit} layout="vertical">
           <Form.Item
@@ -548,11 +607,11 @@ export default function ProfilePage() {
             <Input prefix={<MailOutlined />} placeholder="请输入邮箱地址" />
           </Form.Item>
           <Form.Item>
-            <Space>
+            <Space style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+              <Button onClick={() => setContactModalVisible(false)}>取消</Button>
               <Button type="primary" htmlType="submit" loading={loading}>
                 保存修改
               </Button>
-              <Button onClick={() => setContactModalVisible(false)}>取消</Button>
             </Space>
           </Form.Item>
         </Form>

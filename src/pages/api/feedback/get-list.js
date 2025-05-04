@@ -1,4 +1,6 @@
 import { neon } from '@neondatabase/serverless';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -8,7 +10,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 获取所有有反馈的聊天记录
+    // 获取当前用户的会话信息
+    const session = await getServerSession(req, res, authOptions);
+
+    // 如果没有会话或用户未登录，返回未授权错误
+    if (!session || !session.user) {
+      return res.status(401).json({
+        success: false,
+        message: '未授权，请先登录',
+      });
+    }
+
+    const userId = session.user.id;
+
+    // 只获取当前用户的反馈记录
     const feedbacks = await sql`
       SELECT 
         c.id, 
@@ -28,6 +43,7 @@ export default async function handler(req, res) {
         users u ON c.user_id = u.id
       WHERE 
         c.feedback_type IS NOT NULL
+        AND c.user_id = ${userId}
       ORDER BY 
         c.created_at DESC
     `;

@@ -17,28 +17,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: '方法不允许' });
   }
 
+  // 设置响应头，支持流式传输和CORS
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-Accel-Buffering', 'no');
+
   try {
     const session = await getServerSession(req, res, authOptions);
 
     if (!session?.user?.id) {
-      return res.status(401).json({ message: '未授权' });
+      res.write(`data: ${JSON.stringify({ error: '未授权' })}\n\n`);
+      return res.end();
     }
 
     const userType = session.user.type || 'student';
     const userId = session.user.id;
 
+    // 发送初始消息
+    res.write(`data: ${JSON.stringify({ message: 'analysis_start' })}\n\n`);
+
     // 根据用户类型进行不同的处理
     if (userType === 'teacher') {
-      return await handleTeacherAnalysis(userId, res);
+      await handleTeacherAnalysis(userId, res);
     } else {
-      return await handleStudentAnalysis(userId, res);
+      await handleStudentAnalysis(userId, res);
     }
+
+    // 发送结束消息
+    res.write(`data: ${JSON.stringify({ message: 'analysis_complete' })}\n\n`);
+    return res.end();
   } catch (error) {
     console.error('深度分析失败:', error);
-    return res.status(500).json({
-      message: '获取深度分析失败',
-      error: error instanceof Error ? error.message : '未知错误',
-    });
+    res.write(
+      `data: ${JSON.stringify({
+        error: '获取深度分析失败',
+        details: error instanceof Error ? error.message : '未知错误',
+      })}\n\n`,
+    );
+    return res.end();
   }
 }
 
@@ -157,6 +175,9 @@ async function handleTeacherAnalysis(userId: string, res: NextApiResponse) {
     })),
   };
 
+  // 发送原始数据
+  res.write(`data: ${JSON.stringify({ type: 'raw_data', data: analysisData })}\n\n`);
+
   // 构建发送给AI的prompt
   const prompt = `
 你是一位经验丰富的教育顾问，正在帮助一位教师分析学生的学习情况和教学效果。请根据以下教学数据，为这位教师提供深度教学分析和建议。
@@ -201,29 +222,124 @@ ${analysisData.complexQuestions
 5. 练习设计建议
 6. 个性化教学方向
 
-请用专业但易于理解的语言回答，为教师提供有价值的教学指导。回答需要具体、有针对性，并基于数据分析。
+请以Markdown格式回答，使用适当的标题、列表和强调语法，为教师提供有价值的教学指导。
+
+注意事项：
+1. 请确保代码块使用正确的Markdown语法：使用三个反引号(\`\`\`)开始和结束代码块
+2. 代码块应当指定语言，例如：\`\`\`python
+3. 所有代码块必须正确闭合，即每个开始的\`\`\`必须有一个对应的结束\`\`\`
+4. 回答需要具体、有针对性，并基于数据分析
 `;
 
-  // 调用DeepSeek API
-  const completion = await openai.chat.completions.create({
+  // 调用DeepSeek API的流式接口
+  const stream = await openai.chat.completions.create({
     model: 'deepseek-chat',
     messages: [
       {
         role: 'system',
         content:
-          '你是一位专业的教育咨询专家，擅长教学分析和教学策略优化。请基于提供的数据进行深度教育分析。',
+          '你是一位专业的教育咨询专家，擅长教学分析和教学策略优化。请以Markdown格式基于提供的数据进行深度教育分析。确保代码块格式正确，使用```语言名 和 ``` 包裹代码。注意：不要将整个回答包装在```markdown```和```之间，这会导致内容被错误地显示为代码块。',
       },
       { role: 'user', content: prompt },
     ],
     temperature: 0.7,
     max_tokens: 2000,
+    stream: true,
   });
 
-  // 返回分析结果
-  return res.status(200).json({
-    rawData: analysisData,
-    analysis: completion.choices[0].message.content,
-  });
+  // 处理流式响应
+  let buffer = '';
+  let codeBlockOpen = false;
+  let isFirstChunk = true; // 用于跟踪是否是第一个块
+  let hasProcessedHeader = false; // 用于跟踪是否已处理头部
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content || '';
+    if (content) {
+      // 如果是第一个块，检查是否以```markdown开头
+      if (isFirstChunk) {
+        if (
+          content.trimStart().startsWith('```markdown') ||
+          content.trimStart().startsWith('```')
+        ) {
+          console.log('[API] 检测到开头的```markdown，移除');
+          // 找到第一个换行符
+          const newlineIndex = content.indexOf('\n');
+          if (newlineIndex !== -1) {
+            // 移除```markdown直到换行
+            buffer += content.substring(newlineIndex + 1);
+          } else {
+            // 如果没有换行符，可能整个内容都是```markdown，设置标记但不添加内容
+            hasProcessedHeader = true;
+          }
+        } else {
+          // 正常添加内容
+          buffer += content;
+        }
+        isFirstChunk = false;
+      } else {
+        // 如果设置了处理头部标记但还没有处理（等待换行符）
+        if (hasProcessedHeader && !buffer.length) {
+          const newlineIndex = content.indexOf('\n');
+          if (newlineIndex !== -1) {
+            // 移除第一行直到换行
+            buffer += content.substring(newlineIndex + 1);
+            hasProcessedHeader = false;
+          } else {
+            // 仍然没有换行符，继续等待
+            continue;
+          }
+        } else {
+          // 检查是否有代码块标记
+          if (content.includes('```')) {
+            // 代码块处理逻辑（保持不变）
+            const parts = content.split('```');
+
+            // 拼接内容并处理代码块状态
+            for (let i = 0; i < parts.length; i++) {
+              if (i > 0) {
+                codeBlockOpen = !codeBlockOpen; // 切换状态
+                buffer += '```'; // 添加标记
+              }
+              buffer += parts[i];
+
+              // 如果不是最后一部分，且当前完成了一个代码块或标识符+语言行，立即发送
+              if (i < parts.length - 1 || buffer.endsWith('\n') || buffer.length > 80) {
+                console.log('[服务端调试] 发送缓冲内容:', buffer);
+                res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
+                buffer = '';
+              }
+            }
+          } else {
+            // 非代码块标记内容
+            buffer += content;
+
+            // 只有当内容包含完整的行或者达到一定长度时才发送，除非是在代码块内
+            if (codeBlockOpen || content.includes('\n') || buffer.length > 80) {
+              console.log('[服务端调试] 发送缓冲内容:', buffer);
+              res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
+              buffer = '';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 发送剩余的内容，检查是否以```结尾
+  if (buffer.length > 0) {
+    // 检查并移除末尾的```
+    if (buffer.trimEnd().endsWith('```')) {
+      const lastBlockStart = buffer.lastIndexOf('```');
+      if (lastBlockStart !== -1 && !buffer.substring(0, lastBlockStart).includes('```')) {
+        // 只有当这是唯一的一个```时才移除
+        buffer = buffer.substring(0, lastBlockStart);
+      }
+    }
+
+    console.log('[服务端调试] 发送最后剩余内容:', buffer);
+    res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
+  }
 }
 
 // 处理学生深度分析
@@ -238,7 +354,8 @@ async function handleStudentAnalysis(userId: string, res: NextApiResponse) {
   `;
 
   if (studentInfoQuery.length === 0) {
-    return res.status(404).json({ message: '未找到学生信息' });
+    res.write(`data: ${JSON.stringify({ error: '未找到学生信息' })}\n\n`);
+    return;
   }
 
   const studentInfo = studentInfoQuery[0];
@@ -357,6 +474,9 @@ async function handleStudentAnalysis(userId: string, res: NextApiResponse) {
     })),
   };
 
+  // 发送原始数据
+  res.write(`data: ${JSON.stringify({ type: 'raw_data', data: analysisData })}\n\n`);
+
   // 构建学生分析的prompt
   const studentPrompt = `
 你是一位专业的学习顾问，正在为一位学生提供个性化学习分析和建议。请根据以下学习数据，为这位学生提供深度学习分析和规划建议。
@@ -424,27 +544,123 @@ ${analysisData.complexQuestions
 5. 针对不同问题类型的学习方法建议
 6. 短期学习目标与规划建议
 
-请用积极、鼓励但真实的语言回答，为学生提供有实际价值的学习指导。回答需要具体、有针对性，并基于数据分析。避免提及没有数据支撑的内容，如已完成练习数量或学习进度百分比等。
+请以Markdown格式回答，使用适当的标题、列表和强调语法，为学生提供有实际价值的学习指导。
+
+注意事项：
+1. 请确保代码块使用正确的Markdown语法：使用三个反引号(\`\`\`)开始和结束代码块
+2. 代码块应当指定语言，例如：\`\`\`python
+3. 所有代码块必须正确闭合，即每个开始的\`\`\`必须有一个对应的结束\`\`\`
+4. 回答需要具体、有针对性，并基于数据分析
+5. 避免提及没有数据支撑的内容，如已完成练习数量或学习进度百分比等
 `;
 
-  // 调用DeepSeek API进行学生分析
-  const completion = await openai.chat.completions.create({
+  // 调用DeepSeek API的流式接口
+  const stream = await openai.chat.completions.create({
     model: 'deepseek-chat',
     messages: [
       {
         role: 'system',
         content:
-          '你是一位专业的学习顾问，擅长分析学生学习行为和提供个性化学习建议。请基于提供的数据进行深入分析，并提供实用的学习规划。',
+          '你是一位专业的学习顾问，擅长分析学生学习行为和提供个性化学习建议。请以Markdown格式基于提供的数据进行深入分析，并提供实用的学习规划。确保代码块格式正确，使用```语言名 和 ``` 包裹代码。注意：不要将整个回答包装在```markdown```和```之间，这会导致内容被错误地显示为代码块。',
       },
       { role: 'user', content: studentPrompt },
     ],
     temperature: 0.7,
     max_tokens: 2000,
+    stream: true,
   });
 
-  // 返回分析结果
-  return res.status(200).json({
-    rawData: analysisData,
-    analysis: completion.choices[0].message.content,
-  });
+  // 处理流式响应
+  let buffer = '';
+  let codeBlockOpen = false;
+  let isFirstChunk = true; // 用于跟踪是否是第一个块
+  let hasProcessedHeader = false; // 用于跟踪是否已处理头部
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content || '';
+    if (content) {
+      // 如果是第一个块，检查是否以```markdown开头
+      if (isFirstChunk) {
+        if (
+          content.trimStart().startsWith('```markdown') ||
+          content.trimStart().startsWith('```')
+        ) {
+          console.log('[API] 检测到开头的```markdown，移除');
+          // 找到第一个换行符
+          const newlineIndex = content.indexOf('\n');
+          if (newlineIndex !== -1) {
+            // 移除```markdown直到换行
+            buffer += content.substring(newlineIndex + 1);
+          } else {
+            // 如果没有换行符，可能整个内容都是```markdown，设置标记但不添加内容
+            hasProcessedHeader = true;
+          }
+        } else {
+          // 正常添加内容
+          buffer += content;
+        }
+        isFirstChunk = false;
+      } else {
+        // 如果设置了处理头部标记但还没有处理（等待换行符）
+        if (hasProcessedHeader && !buffer.length) {
+          const newlineIndex = content.indexOf('\n');
+          if (newlineIndex !== -1) {
+            // 移除第一行直到换行
+            buffer += content.substring(newlineIndex + 1);
+            hasProcessedHeader = false;
+          } else {
+            // 仍然没有换行符，继续等待
+            continue;
+          }
+        } else {
+          // 检查是否有代码块标记
+          if (content.includes('```')) {
+            // 处理代码块的逻辑（保持不变）...
+            const parts = content.split('```');
+
+            // 拼接内容并处理代码块状态
+            for (let i = 0; i < parts.length; i++) {
+              if (i > 0) {
+                codeBlockOpen = !codeBlockOpen; // 切换状态
+                buffer += '```'; // 添加标记
+              }
+              buffer += parts[i];
+
+              // 如果不是最后一部分，且当前完成了一个代码块或标识符+语言行，立即发送
+              if (i < parts.length - 1 || buffer.endsWith('\n') || buffer.length > 80) {
+                console.log('[服务端调试] 发送缓冲内容:', buffer);
+                res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
+                buffer = '';
+              }
+            }
+          } else {
+            // 非代码块标记内容
+            buffer += content;
+
+            // 只有当内容包含完整的行或者达到一定长度时才发送，除非是在代码块内
+            if (codeBlockOpen || content.includes('\n') || buffer.length > 80) {
+              console.log('[服务端调试] 发送缓冲内容:', buffer);
+              res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
+              buffer = '';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 发送剩余的内容，检查是否以```结尾
+  if (buffer.length > 0) {
+    // 检查并移除末尾的```
+    if (buffer.trimEnd().endsWith('```')) {
+      const lastBlockStart = buffer.lastIndexOf('```');
+      if (lastBlockStart !== -1 && !buffer.substring(0, lastBlockStart).includes('```')) {
+        // 只有当这是唯一的一个```时才移除
+        buffer = buffer.substring(0, lastBlockStart);
+      }
+    }
+
+    console.log('[服务端调试] 发送最后剩余内容:', buffer);
+    res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
+  }
 }

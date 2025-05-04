@@ -1,23 +1,41 @@
 .container {
-  max-width: 666px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px 12px;
 }
 
 .card {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .avatarSection {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
+  padding-top: 12px;
+}
+
+.avatar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
 }
 
 .uploadButton {
-  margin-top: 16px;
+  margin-top: 20px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.uploadButton:hover {
+  transform: translateY(-2px);
 }
 
 .form {
@@ -26,7 +44,7 @@
 }
 
 .form :global(.ant-form-item) {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .form :global(.ant-form-item-label > label) {
@@ -36,12 +54,23 @@
 .form :global(.ant-input),
 .form :global(.ant-input-affix-wrapper),
 .form :global(.ant-input-password) {
-  border-radius: 4px;
+  border-radius: 6px;
   width: 100%;
+  padding: 10px 12px;
+  transition: all 0.3s ease;
 }
 
 .form :global(.ant-btn) {
-  border-radius: 4px;
+  border-radius: 6px;
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.form :global(.ant-btn:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form :global(.ant-upload) {
@@ -55,4 +84,55 @@
 .form :global(.ant-input-textarea) {
   max-height: 200px;
   overflow-y: auto;
+}
+
+.studentInfo {
+  padding: 16px 8px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.infoItem {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+}
+
+.infoItem:hover {
+  transform: translateX(4px);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.buttonGroup button {
+  border-radius: 6px;
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.buttonGroup button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modalContent {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.successMessage,
+.errorMessage {
+  border-radius: 4px;
 }

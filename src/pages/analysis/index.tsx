@@ -5,16 +5,20 @@ import {
   FileDoneOutlined,
   FileOutlined,
   FileTextOutlined,
-  LoadingOutlined,
   MessageOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Card, Col, Collapse, List, Row, Spin, Statistic, Table } from 'antd';
+import { Badge, Button, Card, Col, List, Row, Spin, Statistic, Table } from 'antd';
 // @ts-ignore
+import { theme } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import { useSession } from 'next-auth/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism/index.js';
+import remarkGfm from 'remark-gfm';
 import styles from './index.module.css';
 
 interface BaseStats {
@@ -86,24 +90,300 @@ interface StudentData extends BaseStats {
   deepAnalysis?: string;
 }
 
+// 添加流式分析接口
+interface StreamAnalysisData {
+  type: 'content' | 'raw_data';
+  text?: string;
+  data?: any;
+  error?: string;
+  message?: string;
+  details?: string;
+}
+
+// 简化全局状态管理器，移除复杂的重连逻辑
+const globalState = {
+  teacherAnalysisContent: '',
+  studentAnalysisContent: '',
+};
+
+// 创建一个公共的Markdown渲染组件，使用与聊天页面相同的样式
+const MarkdownRenderer = ({ content }: { content: string }) => {
+  // 预处理Markdown内容，确保代码块正确格式化
+  const processedContent = React.useMemo(() => {
+    if (!content) return '';
+
+    // 调试日志：显示原始内容
+    console.log('[渲染组件] 原始内容:', content);
+
+    // 移除开头的```markdown和结尾的```标记
+    let processedText = content;
+
+    // 检查是否以```markdown开头
+    if (
+      processedText.trimStart().startsWith('```markdown') ||
+      processedText.trimStart().startsWith('```')
+    ) {
+      console.log('[渲染组件] 检测到开头的代码块标记，正在移除');
+      // 找到第一个```后的换行符位置
+      const firstBlockEnd = processedText.indexOf('\n', processedText.indexOf('```'));
+      if (firstBlockEnd !== -1) {
+        // 移除开头的```markdown直到换行符
+        processedText = processedText.substring(firstBlockEnd + 1);
+      }
+    }
+
+    // 检查是否以```结尾
+    if (processedText.trimEnd().endsWith('```')) {
+      console.log('[渲染组件] 检测到结尾的代码块标记，正在移除');
+      // 找到最后一个```的位置
+      const lastBlockStart = processedText.lastIndexOf('```');
+      if (lastBlockStart !== -1) {
+        // 移除最后的```
+        processedText = processedText.substring(0, lastBlockStart);
+      }
+    }
+
+    // 移除末尾的空pre标签
+    processedText = processedText.replace(/```\s*$/g, '');
+
+    // 处理未完成的代码块（如果有）
+    const codeBlockMatches = processedText.match(/```[^`]*?$/g);
+    if (codeBlockMatches && codeBlockMatches.length % 2 !== 0) {
+      // 有未闭合的代码块，添加闭合标记
+      processedText += '\n```';
+      console.log('[渲染组件] 添加了闭合标记');
+    }
+
+    // 打印处理后的内容
+    console.log('[渲染组件] 处理后内容:', processedText);
+
+    return processedText;
+  }, [content]);
+
+  // 使用主题上下文获取当前主题颜色
+  const { token } = theme.useToken();
+
+  return (
+    <div className={styles.markdown}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ node, className, children, ...props }) {
+            // 记录代码块的处理
+            console.log('[渲染组件] 处理代码块:', { className, content: String(children) });
+
+            const match = /language-(\w+)/.exec(className || '');
+            return match ? (
+              <SyntaxHighlighter
+                style={vscDarkPlus as any}
+                language={match[1]}
+                PreTag="div"
+                {...props}
+                customStyle={{
+                  margin: '0',
+                  backgroundColor:
+                    token.colorBgContainer === '#ffffff' ? '#1e1e1e' : token.colorBgContainer,
+                }}
+                children={String(children).replace(/\n$/, '')}
+              />
+            ) : (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          },
+        }}
+      >
+        {processedContent}
+      </ReactMarkdown>
+    </div>
+  );
+};
+
+// 本地存储相关的常量和会话存储
+const STORAGE_KEY = {
+  TEACHER_ANALYSIS: 'teacher_deep_analysis',
+  STUDENT_ANALYSIS: 'student_deep_analysis',
+};
+
+// 使用会话存储保存分析结果
+let sessionStorage = {
+  teacherAnalysis: '',
+  studentAnalysis: '',
+};
+
 const TeacherView: React.FC<{ data: TeacherData }> = ({ data }) => {
-  const [deepAnalysis, setDeepAnalysis] = useState<string | null>(null);
+  const [deepAnalysis, setDeepAnalysis] = useState<string>('');
+  const [rawAnalysisData, setRawAnalysisData] = useState<any>(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
+  const analysisStreamRef = useRef<EventSource | null>(null);
+  const { data: session } = useSession();
+  const { token } = theme.useToken();
 
-  const fetchDeepAnalysis = async () => {
+  // 从会话存储初始化
+  useEffect(() => {
+    // 首先从会话存储或全局状态加载内容
+    if (globalState.teacherAnalysisContent) {
+      setDeepAnalysis(globalState.teacherAnalysisContent);
+      if (globalState.teacherAnalysisContent.length > 0) {
+        setShowAnalysis(true);
+      }
+    } else if (sessionStorage.teacherAnalysis) {
+      setDeepAnalysis(sessionStorage.teacherAnalysis);
+      if (sessionStorage.teacherAnalysis.length > 0) {
+        setShowAnalysis(true);
+      }
+    } else if (session?.user?.id) {
+      // 如果会话存储为空，则尝试从localStorage加载
+      try {
+        const storedData = localStorage.getItem(STORAGE_KEY.TEACHER_ANALYSIS);
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          if (parsedData.userId === session.user.id && parsedData.analysis) {
+            setDeepAnalysis(parsedData.analysis);
+            sessionStorage.teacherAnalysis = parsedData.analysis;
+            globalState.teacherAnalysisContent = parsedData.analysis;
+            // 不立即显示，等用户点击按钮
+          }
+        }
+      } catch (e) {
+        console.error('解析存储的分析数据错误:', e);
+      }
+    }
+
+    // 组件卸载时的清理 - 立即关闭连接
+    return () => {
+      console.log('[页面离开] 关闭教师分析连接');
+      if (analysisStreamRef.current) {
+        // 立即关闭连接，不保持状态
+        analysisStreamRef.current.close();
+        analysisStreamRef.current = null;
+
+        // 保存已生成的内容
+        globalState.teacherAnalysisContent = deepAnalysis;
+
+        // 如果正在加载，显示提示给用户
+        if (loadingAnalysis) {
+          setLoadingAnalysis(false);
+          alert('页面切换，分析已停止。请返回后重新获取分析。');
+        }
+      }
+    };
+  }, [session]);
+
+  // 修改setupEventHandlers函数，简化错误处理
+  const setupEventHandlers = (eventSource: EventSource) => {
+    eventSource.onmessage = (event) => {
+      try {
+        const data: StreamAnalysisData = JSON.parse(event.data);
+
+        // 添加调试日志，查看收到的内容
+        if (data.type === 'content' && data.text) {
+          console.log('[调试日志] 接收到内容:', data.text);
+        }
+
+        if (data.error) {
+          console.error('分析错误:', data.error);
+          setLoadingAnalysis(false);
+          eventSource.close();
+          return;
+        }
+
+        if (data.message === 'analysis_complete') {
+          setLoadingAnalysis(false);
+          eventSource.close();
+          setShowAnalysis(true);
+
+          // 存储到本地存储和会话存储
+          if (session?.user?.id) {
+            const storageData = {
+              userId: session.user.id,
+              analysis: deepAnalysis,
+              timestamp: new Date().toISOString(),
+            };
+            localStorage.setItem(STORAGE_KEY.TEACHER_ANALYSIS, JSON.stringify(storageData));
+            sessionStorage.teacherAnalysis = deepAnalysis;
+            globalState.teacherAnalysisContent = deepAnalysis;
+          }
+
+          // 完成后打印整个内容以便检查
+          console.log('[调试日志] 完整内容:', deepAnalysis);
+          return;
+        }
+
+        if (data.type === 'content' && data.text) {
+          // 打印接收到的内容片段
+          console.log('[数据处理] 收到内容片段:', data.text);
+
+          setDeepAnalysis((prev) => {
+            const newContent = prev + data.text;
+
+            // 调试整体内容状态
+            console.log('[数据处理] 更新后内容长度:', newContent.length);
+            const codeBlockCount = (newContent.match(/```/g) || []).length;
+            console.log(
+              '[数据处理] 代码块标记数量:',
+              codeBlockCount,
+              '是否成对:',
+              codeBlockCount % 2 === 0,
+            );
+
+            // 更新全局状态
+            globalState.teacherAnalysisContent = newContent;
+            sessionStorage.teacherAnalysis = newContent;
+
+            // 一旦有内容开始生成，立即显示分析部分
+            if (!showAnalysis && newContent.length > 0) {
+              setShowAnalysis(true);
+            }
+            return newContent;
+          });
+        }
+
+        if (data.type === 'raw_data' && data.data) {
+          setRawAnalysisData(data.data);
+        }
+      } catch (e) {
+        console.error('解析SSE数据错误:', e);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE错误:', error);
+      setLoadingAnalysis(false);
+      eventSource.close();
+    };
+  };
+
+  const fetchDeepAnalysis = async (forceRefresh = false) => {
+    // 如果已经有内容且不是强制刷新，则直接显示
+    if (deepAnalysis && !forceRefresh) {
+      setShowAnalysis(true);
+      return;
+    }
+
     try {
       setLoadingAnalysis(true);
-      const response = await fetch('/api/analysis/deep-analysis');
-      if (!response.ok) {
-        throw new Error('获取深度分析失败');
+      // 不再隐藏分析部分，使生成内容能够立即显示
+      setDeepAnalysis('');
+      sessionStorage.teacherAnalysis = '';
+      globalState.teacherAnalysisContent = '';
+
+      // 关闭之前的连接
+      if (analysisStreamRef.current) {
+        analysisStreamRef.current.close();
+        analysisStreamRef.current = null;
       }
-      const responseData = await response.json();
-      setDeepAnalysis(responseData.analysis);
-      setShowAnalysis(true);
+
+      // 创建SSE连接
+      const eventSource = new EventSource('/api/analysis/deep-analysis');
+      analysisStreamRef.current = eventSource;
+
+      // 设置事件处理器
+      setupEventHandlers(eventSource);
     } catch (error) {
       console.error('获取深度分析失败:', error);
-    } finally {
       setLoadingAnalysis(false);
     }
   };
@@ -336,41 +616,41 @@ const TeacherView: React.FC<{ data: TeacherData }> = ({ data }) => {
         <Col span={24}>
           <Card
             title="深度教学分析"
+            className={styles.chartContainer}
             extra={
-              !showAnalysis ? (
-                <Button type="primary" onClick={fetchDeepAnalysis} loading={loadingAnalysis}>
-                  {loadingAnalysis ? '分析中...' : '获取深度分析'}
-                </Button>
-              ) : null
+              <Button
+                type="primary"
+                onClick={() => fetchDeepAnalysis(true)}
+                loading={loadingAnalysis}
+              >
+                {loadingAnalysis
+                  ? '分析中...'
+                  : showAnalysis
+                    ? '重新获取分析'
+                    : deepAnalysis
+                      ? '查看分析'
+                      : '获取深度分析'}
+              </Button>
             }
           >
-            {loadingAnalysis ? (
-              <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-                <p style={{ marginTop: '20px' }}>正在进行深度分析，这可能需要一些时间...</p>
-              </div>
-            ) : showAnalysis && deepAnalysis ? (
+            {showAnalysis ? (
               <div className={styles.analysisSection}>
-                <Collapse defaultActiveKey={['1']}>
-                  <Collapse.Panel header="教学分析结果" key="1">
-                    {deepAnalysis.split('\n\n').map((paragraph, index) => (
-                      <div key={index} style={{ marginBottom: '16px' }}>
-                        {paragraph.split('\n').map((line, lineIndex) => (
-                          <p
-                            key={lineIndex}
-                            style={line.startsWith('#') ? { fontWeight: 'bold' } : {}}
-                          >
-                            {line}
-                          </p>
-                        ))}
-                      </div>
-                    ))}
-                  </Collapse.Panel>
-                </Collapse>
+                {loadingAnalysis && deepAnalysis === '' ? (
+                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <Spin />
+                    <div style={{ marginTop: '10px' }}>正在生成分析，请稍候...</div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.streamingContent}>
+                      <MarkdownRenderer content={deepAnalysis} />
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '30px 0' }}>
-                <p>
+                <p style={{ color: token.colorTextSecondary }}>
                   点击"获取深度分析"按钮，系统将结合学生数据、问题类型和练习情况，为您提供详细的教学建议。
                 </p>
               </div>
@@ -383,23 +663,177 @@ const TeacherView: React.FC<{ data: TeacherData }> = ({ data }) => {
 };
 
 const StudentView: React.FC<{ data: StudentData }> = ({ data }) => {
-  const [deepAnalysis, setDeepAnalysis] = useState<string | null>(null);
+  const [deepAnalysis, setDeepAnalysis] = useState<string>('');
+  const [rawAnalysisData, setRawAnalysisData] = useState<any>(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
+  const analysisStreamRef = useRef<EventSource | null>(null);
+  const { data: session } = useSession();
+  const { token } = theme.useToken();
 
-  const fetchDeepAnalysis = async () => {
+  // 从会话存储初始化
+  useEffect(() => {
+    // 首先从会话存储或全局状态加载内容
+    if (globalState.studentAnalysisContent) {
+      setDeepAnalysis(globalState.studentAnalysisContent);
+      if (globalState.studentAnalysisContent.length > 0) {
+        setShowAnalysis(true);
+      }
+    } else if (sessionStorage.studentAnalysis) {
+      setDeepAnalysis(sessionStorage.studentAnalysis);
+      if (sessionStorage.studentAnalysis.length > 0) {
+        setShowAnalysis(true);
+      }
+    } else if (session?.user?.id) {
+      // 如果会话存储为空，则尝试从localStorage加载
+      try {
+        const storedData = localStorage.getItem(STORAGE_KEY.STUDENT_ANALYSIS);
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          if (parsedData.userId === session.user.id && parsedData.analysis) {
+            setDeepAnalysis(parsedData.analysis);
+            sessionStorage.studentAnalysis = parsedData.analysis;
+            globalState.studentAnalysisContent = parsedData.analysis;
+            // 不立即显示，等用户点击按钮
+          }
+        }
+      } catch (e) {
+        console.error('解析存储的分析数据错误:', e);
+      }
+    }
+
+    // 组件卸载时的清理 - 立即关闭连接
+    return () => {
+      console.log('[页面离开] 关闭学生分析连接');
+      if (analysisStreamRef.current) {
+        // 立即关闭连接，不保持状态
+        analysisStreamRef.current.close();
+        analysisStreamRef.current = null;
+
+        // 保存已生成的内容
+        globalState.studentAnalysisContent = deepAnalysis;
+
+        // 如果正在加载，显示提示给用户
+        if (loadingAnalysis) {
+          setLoadingAnalysis(false);
+          alert('页面切换，分析已停止。请返回后重新获取分析。');
+        }
+      }
+    };
+  }, [session]);
+
+  // 修改setupEventHandlers函数
+  const setupEventHandlers = (eventSource: EventSource) => {
+    eventSource.onmessage = (event) => {
+      try {
+        const data: StreamAnalysisData = JSON.parse(event.data);
+
+        // 添加调试日志，查看收到的内容
+        if (data.type === 'content' && data.text) {
+          console.log('[调试日志] 接收到内容:', data.text);
+        }
+
+        if (data.error) {
+          console.error('分析错误:', data.error);
+          setLoadingAnalysis(false);
+          eventSource.close();
+          return;
+        }
+
+        if (data.message === 'analysis_complete') {
+          setLoadingAnalysis(false);
+          eventSource.close();
+          setShowAnalysis(true);
+
+          // 存储到本地存储和会话存储
+          if (session?.user?.id) {
+            const storageData = {
+              userId: session.user.id,
+              analysis: deepAnalysis,
+              timestamp: new Date().toISOString(),
+            };
+            localStorage.setItem(STORAGE_KEY.STUDENT_ANALYSIS, JSON.stringify(storageData));
+            sessionStorage.studentAnalysis = deepAnalysis;
+            globalState.studentAnalysisContent = deepAnalysis;
+          }
+
+          // 完成后打印整个内容以便检查
+          console.log('[调试日志] 完整内容:', deepAnalysis);
+          return;
+        }
+
+        if (data.type === 'content' && data.text) {
+          // 打印接收到的内容片段
+          console.log('[数据处理] 收到内容片段:', data.text);
+
+          setDeepAnalysis((prev) => {
+            const newContent = prev + data.text;
+
+            // 调试整体内容状态
+            console.log('[数据处理] 更新后内容长度:', newContent.length);
+            const codeBlockCount = (newContent.match(/```/g) || []).length;
+            console.log(
+              '[数据处理] 代码块标记数量:',
+              codeBlockCount,
+              '是否成对:',
+              codeBlockCount % 2 === 0,
+            );
+
+            // 更新全局状态
+            globalState.studentAnalysisContent = newContent;
+            sessionStorage.studentAnalysis = newContent;
+
+            // 一旦有内容开始生成，立即显示分析部分
+            if (!showAnalysis && newContent.length > 0) {
+              setShowAnalysis(true);
+            }
+            return newContent;
+          });
+        }
+
+        if (data.type === 'raw_data' && data.data) {
+          setRawAnalysisData(data.data);
+        }
+      } catch (e) {
+        console.error('解析SSE数据错误:', e);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE错误:', error);
+      setLoadingAnalysis(false);
+      eventSource.close();
+    };
+  };
+
+  const fetchDeepAnalysis = async (forceRefresh = false) => {
+    // 如果已经有内容且不是强制刷新，则直接显示
+    if (deepAnalysis && !forceRefresh) {
+      setShowAnalysis(true);
+      return;
+    }
+
     try {
       setLoadingAnalysis(true);
-      const response = await fetch('/api/analysis/deep-analysis');
-      if (!response.ok) {
-        throw new Error('获取深度分析失败');
+      // 不再隐藏分析部分，使生成内容能够立即显示
+      setDeepAnalysis('');
+      sessionStorage.studentAnalysis = '';
+      globalState.studentAnalysisContent = '';
+
+      // 关闭之前的连接
+      if (analysisStreamRef.current) {
+        analysisStreamRef.current.close();
+        analysisStreamRef.current = null;
       }
-      const responseData = await response.json();
-      setDeepAnalysis(responseData.analysis);
-      setShowAnalysis(true);
+
+      // 创建SSE连接
+      const eventSource = new EventSource('/api/analysis/deep-analysis');
+      analysisStreamRef.current = eventSource;
+
+      // 设置事件处理器
+      setupEventHandlers(eventSource);
     } catch (error) {
       console.error('获取深度分析失败:', error);
-    } finally {
       setLoadingAnalysis(false);
     }
   };
@@ -600,47 +1034,43 @@ const StudentView: React.FC<{ data: StudentData }> = ({ data }) => {
       <Row style={{ marginTop: '24px' }}>
         <Col span={24}>
           <Card
-            title="个性化学习分析"
+            title="深度学习分析"
+            className={styles.chartContainer}
             extra={
-              !showAnalysis ? (
-                <Button type="primary" onClick={fetchDeepAnalysis} loading={loadingAnalysis}>
-                  {loadingAnalysis ? '分析中...' : '获取学习分析'}
-                </Button>
-              ) : null
+              <Button
+                type="primary"
+                onClick={() => fetchDeepAnalysis(true)}
+                loading={loadingAnalysis}
+              >
+                {loadingAnalysis
+                  ? '分析中...'
+                  : showAnalysis
+                    ? '重新获取分析'
+                    : deepAnalysis
+                      ? '查看分析'
+                      : '获取深度分析'}
+              </Button>
             }
           >
-            {loadingAnalysis ? (
-              <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-                <p style={{ marginTop: '20px' }}>正在进行个性化学习分析，这可能需要一些时间...</p>
-              </div>
-            ) : showAnalysis && deepAnalysis ? (
+            {showAnalysis ? (
               <div className={styles.analysisSection}>
-                <Collapse defaultActiveKey={['1']}>
-                  <Collapse.Panel header="个性化学习建议" key="1">
-                    {deepAnalysis.split('\n\n').map((paragraph, index) => (
-                      <div key={index} style={{ marginBottom: '16px' }}>
-                        {paragraph.split('\n').map((line, lineIndex) => (
-                          <p
-                            key={lineIndex}
-                            style={
-                              line.startsWith('#') || line.match(/^\d+\./)
-                                ? { fontWeight: 'bold', marginTop: '12px' }
-                                : {}
-                            }
-                          >
-                            {line}
-                          </p>
-                        ))}
-                      </div>
-                    ))}
-                  </Collapse.Panel>
-                </Collapse>
+                {loadingAnalysis && deepAnalysis === '' ? (
+                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <Spin />
+                    <div style={{ marginTop: '10px' }}>正在生成分析，请稍候...</div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.streamingContent}>
+                      <MarkdownRenderer content={deepAnalysis} />
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '30px 0' }}>
-                <p>
-                  点击"获取学习分析"按钮，系统将分析您的学习数据，为您提供个性化的学习建议和规划。
+                <p style={{ color: token.colorTextSecondary }}>
+                  点击"获取深度分析"按钮，系统将分析您的学习数据，为您提供个性化的学习建议和规划。
                 </p>
               </div>
             )}

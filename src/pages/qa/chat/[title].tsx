@@ -671,10 +671,10 @@ const ChatPage: React.FC = () => {
       // 创建新笔记
       const newNote: Note = {
         id: Date.now().toString(),
-        title: values.title,
-        content: values.content,
-        category: values.category,
-        subject: values.subject,
+        title: values.title || '无标题',
+        content: values.content || '',
+        category: values.category || '其他',
+        subject: values.subject || (params.title as string),
         createTime: new Date().toLocaleString(),
       };
 
@@ -1036,19 +1036,11 @@ const ChatPage: React.FC = () => {
               width={700}
             >
               <Form form={noteForm} layout="vertical" onFinish={handleSaveNote}>
-                <Form.Item
-                  name="title"
-                  label="标题"
-                  rules={[{ required: true, message: '请输入笔记标题' }]}
-                >
+                <Form.Item name="title" label="标题">
                   <Input placeholder="请输入笔记标题" />
                 </Form.Item>
 
-                <Form.Item
-                  name="subject"
-                  label="科目"
-                  rules={[{ required: true, message: '请选择科目' }]}
-                >
+                <Form.Item name="subject" label="科目">
                   <Select
                     placeholder="请选择科目"
                     options={[
@@ -1057,14 +1049,11 @@ const ChatPage: React.FC = () => {
                       { value: '计算机网络', label: '计算机网络' },
                     ]}
                     defaultValue={params.title}
+                    allowClear
                   />
                 </Form.Item>
 
-                <Form.Item
-                  name="category"
-                  label="分类"
-                  rules={[{ required: true, message: '请选择分类' }]}
-                >
+                <Form.Item name="category" label="分类">
                   <Select
                     placeholder="请选择分类"
                     options={[
@@ -1073,14 +1062,11 @@ const ChatPage: React.FC = () => {
                       { value: '考试重点', label: '考试重点' },
                       { value: '其他', label: '其他' },
                     ]}
+                    allowClear
                   />
                 </Form.Item>
 
-                <Form.Item
-                  name="content"
-                  label="内容"
-                  rules={[{ required: true, message: '请输入笔记内容' }]}
-                >
+                <Form.Item name="content" label="内容">
                   <Input.TextArea rows={8} placeholder="请输入笔记内容" />
                 </Form.Item>
 

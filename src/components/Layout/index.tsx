@@ -1,6 +1,5 @@
 import {
   BarChartOutlined,
-  BookOutlined,
   FileTextOutlined,
   LogoutOutlined,
   MessageOutlined,
@@ -10,7 +9,7 @@ import {
 import { Avatar, Dropdown, Form, Input, Layout, Menu, message, Modal, theme } from 'antd';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './index.module.css';
 
 const { Header, Content, Sider } = Layout;
@@ -28,17 +27,17 @@ const getMenuItems = (userType: string) => {
     {
       key: 'qa',
       icon: <QuestionCircleOutlined />,
-      label: '问答模块',
+      label: '智能问答',
     },
     {
       key: 'notes',
       icon: <FileTextOutlined />,
-      label: '笔记模块',
+      label: '我的笔记',
     },
     {
       key: 'exercises',
       icon: <FileTextOutlined />,
-      label: '练习模块',
+      label: '我的练习',
     },
     ...baseItems,
   ];
@@ -50,25 +49,25 @@ const getMenuItems = (userType: string) => {
         icon: <UserOutlined />,
         label: '学生管理',
       },
-      {
-        key: 'knowledge',
-        icon: <BookOutlined />,
-        label: '知识库管理',
-      },
+      // {
+      //   key: 'knowledge',
+      //   icon: <BookOutlined />,
+      //   label: '知识库管理',
+      // },
       {
         key: 'exercise-management',
         icon: <FileTextOutlined />,
-        label: '练习管理',
+        label: '发布练习',
       },
       {
         key: 'qa',
         icon: <QuestionCircleOutlined />,
-        label: '问答模块',
+        label: '智能问答',
       },
       {
         key: 'notes',
         icon: <FileTextOutlined />,
-        label: '笔记模块',
+        label: '我的笔记',
       },
       ...baseItems,
     ];
@@ -86,7 +85,7 @@ const profileMenuItem = [
   {
     key: 'feedback',
     icon: <MessageOutlined />,
-    label: '反馈模块',
+    label: '我的反馈',
   },
 ];
 export default function ProLayout({ children }) {
@@ -95,22 +94,66 @@ export default function ProLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const { token } = theme.useToken();
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [showLogout, setShowLogout] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [username, setUsername] = useState('');
   const [userType, setUserType] = useState('student');
+  const [selectedKey, setSelectedKey] = useState('');
+  const [userInfoLoaded, setUserInfoLoaded] = useState(false);
 
+  // 处理客户端localStorage的初始化
   useEffect(() => {
+    // 在客户端执行时获取localStorage存储的值
+    const storedAvatarUrl = localStorage.getItem('avatarUrl') || '';
+    const storedUsername = localStorage.getItem('username') || '';
+    const storedUserType = localStorage.getItem('userType') || 'student';
+
+    setAvatarUrl(storedAvatarUrl);
+    setUsername(storedUsername);
+    setUserType(storedUserType);
+  }, []);
+
+  // 使用 useMemo 缓存菜单项
+  const mainMenuItems = useMemo(() => getMenuItems(userType), [userType]);
+
+  // 页面预加载处理函数
+  const handlePrefetch = useCallback(
+    (path) => {
+      router.prefetch(`/${path}`);
+    },
+    [router],
+  );
+
+  // 路由变化时更新选中的菜单项
+  useEffect(() => {
+    const currentPath = router.pathname.split('/')[1] || '';
+    setSelectedKey(currentPath);
+
+    // 预加载相邻路由
+    if (isMainMenuItem(currentPath)) {
+      mainMenuItems.forEach((item) => {
+        if (item.key !== currentPath) {
+          handlePrefetch(item.key);
+        }
+      });
+    } else if (isProfileMenuItem(currentPath)) {
+      profileMenuItem.forEach((item) => {
+        if (item.key !== currentPath) {
+          handlePrefetch(item.key);
+        }
+      });
+    }
+  }, [router.pathname, mainMenuItems, handlePrefetch]);
+
+  // 只在会话变化或首次加载时获取用户信息
+  useEffect(() => {
+    // 如果已从localStorage加载了缓存数据，并且没有session，则不执行
+    if (!session?.user?.id) return;
+
+    // 如果已经加载过用户信息，则不重复加载
+    if (userInfoLoaded) return;
+
     const fetchUserInfo = async () => {
-      // 首先从 localStorage 获取用户类型
-      const storedUserType = localStorage.getItem('userType');
-      if (storedUserType) {
-        setUserType(storedUserType);
-      }
-
-      if (!session?.user?.id) return;
-
       try {
         const response = await fetch('/api/profile/user', {
           method: 'GET',
@@ -126,24 +169,32 @@ export default function ProLayout({ children }) {
         }
 
         const data = await response.json();
+
+        // 更新状态和本地存储
         setUsername(data.username);
-        // 如果 API 返回了用户类型，则使用 API 返回的值
+        localStorage.setItem('username', data.username);
+
         if (data.userType) {
           setUserType(data.userType);
           localStorage.setItem('userType', data.userType);
         }
+
         if (data.avatarUrl) {
           setAvatarUrl(data.avatarUrl);
           localStorage.setItem('avatarUrl', data.avatarUrl);
         }
+
+        setUserInfoLoaded(true);
       } catch (error) {
         console.error('获取用户信息失败:', error);
       }
     };
 
     fetchUserInfo();
+  }, [session, userInfoLoaded]);
 
-    // 添加头像更新事件监听
+  // 头像更新事件监听器
+  useEffect(() => {
     const handleAvatarUpdate = (event: CustomEvent) => {
       setAvatarUrl(event.detail);
     };
@@ -153,13 +204,22 @@ export default function ProLayout({ children }) {
     return () => {
       window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
     };
-  }, [session]);
+  }, []);
+
+  // 使用 useCallback 优化路由跳转
+  const handleMenuClick = useCallback(
+    ({ key }) => {
+      router.push(`/${key}`);
+    },
+    [router],
+  );
 
   const handleLogout = async () => {
     try {
       await signOut({ redirect: false });
       localStorage.removeItem('username');
       localStorage.removeItem('avatarUrl');
+      localStorage.removeItem('userType');
       sessionStorage.removeItem('userId');
       message.success('退出登录成功');
       router.push('/auth/login');
@@ -195,20 +255,46 @@ export default function ProLayout({ children }) {
     }
   };
 
-  const items = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: '个人中心',
-      onClick: () => router.push('/profile'),
+  // 优化下拉菜单项定义，使用 useMemo
+  const dropdownItems = useMemo(
+    () => [
+      {
+        key: 'profile',
+        icon: <UserOutlined />,
+        label: '个人中心',
+        onClick: () => router.push('/profile'),
+      },
+      {
+        key: 'logout',
+        icon: <LogoutOutlined />,
+        label: '退出登录',
+        onClick: handleLogout,
+      },
+    ],
+    [router],
+  );
+
+  // 判断当前路径是否属于主菜单
+  const isMainMenuItem = useCallback(
+    (path) => {
+      return mainMenuItems.some((item) => item.key === path);
     },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: '退出登录',
-      onClick: handleLogout,
-    },
-  ];
+    [mainMenuItems],
+  );
+
+  // 判断当前路径是否属于底部菜单
+  const isProfileMenuItem = useCallback((path) => {
+    return profileMenuItem.some((item) => item.key === path);
+  }, []);
+
+  // 使用 useMemo 缓存当前页面标题
+  const currentPageTitle = useMemo(() => {
+    return (
+      mainMenuItems.find((item) => item.key === selectedKey)?.label ||
+      profileMenuItem.find((item) => item.key === selectedKey)?.label ||
+      ''
+    );
+  }, [mainMenuItems, selectedKey]);
 
   return (
     <Layout style={{ height: '100vh', overflow: 'hidden' }}>
@@ -231,9 +317,9 @@ export default function ProLayout({ children }) {
         </div>
         <Menu
           theme="light"
-          defaultSelectedKeys={[router.pathname.split('/')[1] || '']}
-          items={getMenuItems(userType)}
-          onClick={({ key }) => router.push(`/${key}`)}
+          selectedKeys={isMainMenuItem(selectedKey) ? [selectedKey] : []}
+          items={mainMenuItems}
+          onClick={handleMenuClick}
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -241,9 +327,9 @@ export default function ProLayout({ children }) {
         />
         <Menu
           theme="light"
-          selectedKeys={[router.pathname.split('/')[1] || '']}
+          selectedKeys={isProfileMenuItem(selectedKey) ? [selectedKey] : []}
           items={profileMenuItem}
-          onClick={({ key }) => router.push(`/${key}`)}
+          onClick={handleMenuClick}
           style={{
             position: 'absolute',
             bottom: '3em', // 位于折叠按钮上方
@@ -264,16 +350,10 @@ export default function ProLayout({ children }) {
             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
           }}
         >
-          <div className={styles.breadcrumb}>
-            {
-              getMenuItems(userType).find(
-                (item) => item.key === (router.pathname.split('/')[1] || ''),
-              )?.label
-            }
-          </div>
+          <div className={styles.breadcrumb}>{currentPageTitle}</div>
           <div className={styles.headerRight}>
             <span style={{ marginRight: 16, color: '#262626' }}>{username}</span>
-            <Dropdown menu={{ items }} placement="bottomRight">
+            <Dropdown menu={{ items: dropdownItems }} placement="bottomRight">
               <Avatar
                 src={avatarUrl || undefined}
                 icon={<UserOutlined />}
