@@ -37,6 +37,7 @@
     "next-auth": "^4.24.11",
     "openai": "^4.33.0",
     "prettier-plugin-organize-imports": "^3.2.4",
+    "ragqa-system": "file:",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-markdown": "^10.1.0",
