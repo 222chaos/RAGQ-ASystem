@@ -1,5 +1,5 @@
 {
-  "name": "ai",
+  "name": "ragqa-system",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -20,7 +20,6 @@
     "@qdrant/js-client-rest": "^1.8.2",
     "@types/bcryptjs": "^3.0.0",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "ai": "file:",
     "antd": "^5.16.1",
     "antd-style": "^3.6.2",
     "bcryptjs": "^3.0.2",
@@ -38,7 +37,6 @@
     "next-auth": "^4.24.11",
     "openai": "^4.33.0",
     "prettier-plugin-organize-imports": "^3.2.4",
-    "prettier-plugin-packagejson": "^2.4.14",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-markdown": "^10.1.0",
