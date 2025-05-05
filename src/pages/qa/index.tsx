@@ -78,7 +78,6 @@ export default function QAPage() {
       return;
     }
     const path = `/qa/chat/${imageInfoList[selectedImageIndex % imageInfoList.length].title}`;
-    console.log('Navigating to:', path);
     router.push(path);
   };
 

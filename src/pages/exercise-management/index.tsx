@@ -21,6 +21,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
+import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import styles from './index.module.css';
@@ -76,14 +77,25 @@ const ExerciseManagement = () => {
   const fetchExercises = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/exercises');
+      if (!session?.user?.id) {
+        message.error('请先登录');
+        return;
+      }
+
+      // 添加教师ID作为查询参数，只获取当前教师的练习
+      const response = await fetch(`/api/exercises?teacher_user_id=${session.user.id}`);
       if (!response.ok) {
-        throw new Error('获取练习列表失败');
+        // 只有在状态码不是404时才显示错误消息
+        if (response.status !== 404) {
+          message.error('获取练习列表失败');
+        }
+        return;
       }
       const data = await response.json();
       setExercises(data);
     } catch (error) {
-      message.error('获取练习列表失败');
+      // 不要对新用户显示错误消息
+      console.error('获取练习列表失败:', error);
     } finally {
       setLoading(false);
     }
@@ -91,8 +103,10 @@ const ExerciseManagement = () => {
 
   // 在组件加载时获取数据
   useEffect(() => {
-    fetchExercises();
-  }, []);
+    if (session?.user?.id) {
+      fetchExercises();
+    }
+  }, [session]);
 
   const columns = [
     {
@@ -206,7 +220,7 @@ const ExerciseManagement = () => {
     setEditingExercise(exercise);
     form.setFieldsValue({
       ...exercise,
-      deadline: exercise.deadline ? new Date(exercise.deadline) : null,
+      deadline: exercise.deadline ? dayjs(exercise.deadline) : null,
     });
     setIsModalVisible(true);
   };

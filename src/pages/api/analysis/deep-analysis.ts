@@ -262,7 +262,6 @@ ${analysisData.complexQuestions
           content.trimStart().startsWith('```markdown') ||
           content.trimStart().startsWith('```')
         ) {
-          console.log('[API] 检测到开头的```markdown，移除');
           // 找到第一个换行符
           const newlineIndex = content.indexOf('\n');
           if (newlineIndex !== -1) {
@@ -305,7 +304,6 @@ ${analysisData.complexQuestions
 
               // 如果不是最后一部分，且当前完成了一个代码块或标识符+语言行，立即发送
               if (i < parts.length - 1 || buffer.endsWith('\n') || buffer.length > 80) {
-                console.log('[服务端调试] 发送缓冲内容:', buffer);
                 res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
                 buffer = '';
               }
@@ -316,7 +314,6 @@ ${analysisData.complexQuestions
 
             // 只有当内容包含完整的行或者达到一定长度时才发送，除非是在代码块内
             if (codeBlockOpen || content.includes('\n') || buffer.length > 80) {
-              console.log('[服务端调试] 发送缓冲内容:', buffer);
               res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
               buffer = '';
             }
@@ -337,7 +334,6 @@ ${analysisData.complexQuestions
       }
     }
 
-    console.log('[服务端调试] 发送最后剩余内容:', buffer);
     res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
   }
 }
@@ -585,7 +581,6 @@ ${analysisData.complexQuestions
           content.trimStart().startsWith('```markdown') ||
           content.trimStart().startsWith('```')
         ) {
-          console.log('[API] 检测到开头的```markdown，移除');
           // 找到第一个换行符
           const newlineIndex = content.indexOf('\n');
           if (newlineIndex !== -1) {
@@ -628,7 +623,6 @@ ${analysisData.complexQuestions
 
               // 如果不是最后一部分，且当前完成了一个代码块或标识符+语言行，立即发送
               if (i < parts.length - 1 || buffer.endsWith('\n') || buffer.length > 80) {
-                console.log('[服务端调试] 发送缓冲内容:', buffer);
                 res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
                 buffer = '';
               }
@@ -639,7 +633,6 @@ ${analysisData.complexQuestions
 
             // 只有当内容包含完整的行或者达到一定长度时才发送，除非是在代码块内
             if (codeBlockOpen || content.includes('\n') || buffer.length > 80) {
-              console.log('[服务端调试] 发送缓冲内容:', buffer);
               res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
               buffer = '';
             }
@@ -660,7 +653,6 @@ ${analysisData.complexQuestions
       }
     }
 
-    console.log('[服务端调试] 发送最后剩余内容:', buffer);
     res.write(`data: ${JSON.stringify({ type: 'content', text: buffer })}\n\n`);
   }
 }

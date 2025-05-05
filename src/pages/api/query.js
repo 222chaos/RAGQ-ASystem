@@ -15,7 +15,6 @@ export default async function handler(req, res) {
     try {
       // 读取请求体
       const body = await req.json();
-      console.log('收到请求体:', body);
 
       // 解析嵌套的 JSON 数据
       let query, selectedImageInfo, userType;
@@ -126,10 +125,6 @@ export default async function handler(req, res) {
         // 提取相关内容
         const contents = searchResult.map((result) => result.payload.content);
 
-        contents.forEach((content, index) => {
-          console.log(`${index + 1}. ${content}`);
-        });
-
         // 使用DeepSeek生成回答
         chatData = await openai.chat.completions.create({
           model: 'deepseek-chat',
@@ -214,7 +209,6 @@ ${contents.map((content, index) => `${index + 1}. ${content}`).join('\n')}
       });
     }
   } else {
-    console.log('不支持的请求方法:', req.method);
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: { 'Content-Type': 'application/json' },

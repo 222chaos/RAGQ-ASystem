@@ -287,7 +287,6 @@ const ChatPage: React.FC = () => {
         });
 
         setMessages(updatedMessages as any);
-        console.log('聊天记录已保存，记录ID:', recordId);
       } else {
         console.error('保存聊天记录失败');
       }
@@ -454,15 +453,26 @@ const ChatPage: React.FC = () => {
     // 当没有正在加载的消息且有完整回答时，保存到数据库
     const loadingMessage = messages.find((msg) => msg.status === 'loading');
     if (!loadingMessage && fullAnswer && messages.length > 0) {
-      const lastUserMessage =
-        messages.find((msg) => msg.message.role === 'user')?.message.content || '';
+      // 查找最后一个用户消息（最新的用户问题）
+      let lastUserMessageIndex = -1;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].message.role === 'user') {
+          lastUserMessageIndex = i;
+          break;
+        }
+      }
 
-      // 确保问题和回答都是字符串类型
-      const questionStr = String(lastUserMessage);
-      const answerStr = String(fullAnswer);
+      // 如果找到用户消息
+      if (lastUserMessageIndex !== -1) {
+        const lastUserMessage = messages[lastUserMessageIndex].message.content;
 
-      saveMessageToDatabase(questionStr, answerStr);
-      setFullAnswer(''); // 保存后清空
+        // 确保问题和回答都是字符串类型
+        const questionStr = String(lastUserMessage || '');
+        const answerStr = String(fullAnswer);
+
+        saveMessageToDatabase(questionStr, answerStr);
+        setFullAnswer(''); // 保存后清空
+      }
     }
   }, [loading, fullAnswer, messages]);
 

@@ -1,5 +1,6 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Form, Input, message, Modal, Row, Select, Tag, Typography } from 'antd';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 const { Title, Paragraph } = Typography;
@@ -12,12 +13,13 @@ interface Note {
   category: string;
   subject: string;
   createTime: string;
+  userId: string; // 添加用户ID字段
 }
 
 // 从本地存储加载笔记
-const loadNotesFromLocalStorage = (): Note[] => {
+const loadNotesFromLocalStorage = (userId: string): Note[] => {
   try {
-    const notes = localStorage.getItem('chat_notes');
+    const notes = localStorage.getItem(`chat_notes_${userId}`);
     return notes ? JSON.parse(notes) : [];
   } catch (error) {
     console.error('加载笔记失败:', error);
@@ -26,15 +28,17 @@ const loadNotesFromLocalStorage = (): Note[] => {
 };
 
 // 保存笔记到本地存储
-const saveNotesToLocalStorage = (notes: Note[]) => {
+const saveNotesToLocalStorage = (notes: Note[], userId: string) => {
   try {
-    localStorage.setItem('chat_notes', JSON.stringify(notes));
+    localStorage.setItem(`chat_notes_${userId}`, JSON.stringify(notes));
   } catch (error) {
     console.error('保存笔记失败:', error);
   }
 };
 
 const NotesPage: React.FC = () => {
+  const { data: session } = useSession();
+  const userId = session?.user?.id || '';
   const [dataSource, setDataSource] = useState<Note[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
@@ -42,9 +46,11 @@ const NotesPage: React.FC = () => {
 
   // 加载笔记数据
   useEffect(() => {
-    const notes = loadNotesFromLocalStorage();
-    setDataSource(notes);
-  }, []);
+    if (userId) {
+      const notes = loadNotesFromLocalStorage(userId);
+      setDataSource(notes);
+    }
+  }, [userId]);
 
   // 查看和编辑笔记
   const handleViewEdit = (record: Note) => {
@@ -60,7 +66,7 @@ const NotesPage: React.FC = () => {
       onOk: () => {
         const newDataSource = dataSource.filter((item) => item.id !== record.id);
         setDataSource(newDataSource);
-        saveNotesToLocalStorage(newDataSource);
+        saveNotesToLocalStorage(newDataSource, userId);
         message.success('删除成功');
       },
     });
@@ -77,6 +83,11 @@ const NotesPage: React.FC = () => {
   };
 
   const handleFormSubmit = (values: any) => {
+    if (!userId) {
+      message.error('用户未登录，无法保存笔记');
+      return;
+    }
+
     if (currentNote) {
       // 更新笔记
       const updatedNote = {
@@ -87,7 +98,7 @@ const NotesPage: React.FC = () => {
         item.id === currentNote.id ? updatedNote : item,
       );
       setDataSource(newDataSource);
-      saveNotesToLocalStorage(newDataSource);
+      saveNotesToLocalStorage(newDataSource, userId);
       message.success('笔记更新成功');
     } else {
       // 创建新笔记
@@ -95,14 +106,24 @@ const NotesPage: React.FC = () => {
         id: Date.now().toString(),
         ...values,
         createTime: new Date().toLocaleString(),
+        userId: userId, // 添加用户ID
       };
       const newDataSource = [...dataSource, newNote];
       setDataSource(newDataSource);
-      saveNotesToLocalStorage(newDataSource);
+      saveNotesToLocalStorage(newDataSource, userId);
       message.success('笔记创建成功');
     }
     setModalVisible(false);
   };
+
+  // 如果用户未登录，显示提示信息
+  if (!userId) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <Typography.Title level={4}>请先登录后再查看笔记</Typography.Title>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px', maxWidth: '100%' }}>
@@ -113,64 +134,94 @@ const NotesPage: React.FC = () => {
       </div>
 
       <Row gutter={[16, 16]}>
-        {dataSource.map((note) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={note.id}>
-            <Card
-              hoverable
-              title={
-                <div
-                  style={{
-                    width: '100%',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {note.title || '无标题'}
-                </div>
-              }
-              extra={
-                <Button
-                  type="text"
-                  danger
-                  size="small"
-                  icon={<DeleteOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(note);
+        {dataSource.length === 0 ? (
+          <Col span={24}>
+            <Card style={{ textAlign: 'center', padding: '30px 0' }}>
+              <div>
+                <img
+                  src="/images/empty-notes.svg"
+                  alt="空笔记"
+                  style={{ width: '120px', height: '120px', marginBottom: '20px' }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
                   }}
                 />
-              }
-              onClick={() => handleViewEdit(note)}
-              style={{ height: '100%' }}
-            >
-              <div style={{ marginBottom: '8px' }}>
-                {note.subject && <Tag color="green">{note.subject}</Tag>}
-                {note.category && <Tag color="blue">{note.category}</Tag>}
-              </div>
-              <div
-                style={{
-                  color: '#999',
-                  fontSize: '12px',
-                  marginBottom: '8px',
-                }}
-              >
-                {note.createTime}
-              </div>
-              <div
-                style={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                }}
-              >
-                {note.content}
+                <Title level={4}>暂无笔记</Title>
+                <Paragraph>
+                  您可以在智能问答过程中点击聊天窗口右下角的笔记按钮记录重要内容
+                </Paragraph>
+                <Paragraph>或者直接点击右上角的"新建笔记"按钮创建一个新笔记</Paragraph>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleCreate}
+                  style={{ marginTop: '15px' }}
+                >
+                  立即创建笔记
+                </Button>
               </div>
             </Card>
           </Col>
-        ))}
+        ) : (
+          dataSource.map((note) => (
+            <Col xs={24} sm={12} md={8} lg={6} key={note.id}>
+              <Card
+                hoverable
+                title={
+                  <div
+                    style={{
+                      width: '100%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {note.title || '无标题'}
+                  </div>
+                }
+                extra={
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(note);
+                    }}
+                  />
+                }
+                onClick={() => handleViewEdit(note)}
+                style={{ height: '100%' }}
+              >
+                <div style={{ marginBottom: '8px' }}>
+                  {note.subject && <Tag color="green">{note.subject}</Tag>}
+                  {note.category && <Tag color="blue">{note.category}</Tag>}
+                </div>
+                <div
+                  style={{
+                    color: '#999',
+                    fontSize: '12px',
+                    marginBottom: '8px',
+                  }}
+                >
+                  {note.createTime}
+                </div>
+                <div
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {note.content}
+                </div>
+              </Card>
+            </Col>
+          ))
+        )}
       </Row>
 
       <Modal

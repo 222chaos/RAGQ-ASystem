@@ -29,7 +29,6 @@ export default function TestPage() {
       }
 
       const data = await response.json();
-      console.log('向量化结果:', data);
       setEmbeddingResult(JSON.stringify(data, null, 2));
     } catch (error) {
       console.error('向量化失败:', error);

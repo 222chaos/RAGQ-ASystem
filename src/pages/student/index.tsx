@@ -259,7 +259,7 @@ export default function StudentPage() {
         loading={tableLoading}
         search={{
           labelWidth: 'auto',
-          defaultCollapsed: false,
+          defaultCollapsed: true,
           optionRender: (searchConfig, formProps, dom) => [
             <Button
               key="search"

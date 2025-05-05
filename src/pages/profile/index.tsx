@@ -60,8 +60,6 @@ export default function ProfilePage() {
 
       try {
         setLoading(true);
-        console.log('当前 session:', session);
-        console.log('用户类型:', session?.user?.type);
 
         const response = await fetch('/api/profile/user', {
           method: 'GET',
@@ -78,7 +76,6 @@ export default function ProfilePage() {
         }
 
         const data = await response.json();
-        console.log('获取到的用户信息:', data);
 
         // 设置头像
         if (data.avatarUrl) {
@@ -93,13 +90,11 @@ export default function ProfilePage() {
 
         // 如果是学生，从 students 表中获取学生信息
         if (session?.user?.type === 'student') {
-          console.log('开始获取学生信息...');
           const studentResponse = await fetch(
             `/api/profile/student-info?userId=${session.user.id}`,
           );
           if (studentResponse.ok) {
             const studentData = await studentResponse.json();
-            console.log('获取到的学生信息:', studentData);
             // 设置学生信息
             const userInfoData = {
               ...data,
@@ -109,7 +104,6 @@ export default function ProfilePage() {
               email: studentData.email,
               name: studentData.name,
             };
-            console.log('设置的用户信息:', userInfoData);
             setUserInfo(userInfoData);
             // 设置联系方式表单的初始值
             contactForm.setFieldsValue({
@@ -121,7 +115,6 @@ export default function ProfilePage() {
             message.error('获取学生信息失败');
           }
         } else {
-          console.log('非学生用户，直接设置用户信息');
           setUserInfo(data);
         }
       } catch (error) {
@@ -302,7 +295,6 @@ export default function ProfilePage() {
   const handleContactSubmit = async (values) => {
     try {
       setLoading(true);
-      console.log('提交的联系方式:', values);
 
       const response = await fetch('/api/profile/update-contact', {
         method: 'PUT',
@@ -321,7 +313,6 @@ export default function ProfilePage() {
       }
 
       const data = await response.json();
-      console.log('更新联系方式成功:', data);
 
       setUserInfo({ ...userInfo!, phone: values.phone, email: values.email });
       message.success('联系方式更新成功');

@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS exercises (
     difficulty VARCHAR(10) NOT NULL CHECK (difficulty IN ('简单', '中等', '困难')),
     status VARCHAR(10) NOT NULL DEFAULT '草稿' CHECK (status IN ('草稿', '已发布')),
     deadline TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建练习表索引
