@@ -4,14 +4,16 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(200) NOT NULL,
     avatar_url text,
-    type VARCHAR(10) NOT NULL DEFAULT 'student' CHECK (type IN ('student', 'teacher'))
+    type VARCHAR(10) NOT NULL DEFAULT 'student' CHECK (
+        type IN ('student', 'teacher', 'admin')
+    )
 );
 
 -- 创建学生表
 CREATE TABLE IF NOT EXISTS students (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    teacher_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
+    teacher_user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
     name VARCHAR(50) NOT NULL,
     student_id VARCHAR(20) NOT NULL UNIQUE,
     class_name VARCHAR(100) NOT NULL,
@@ -20,44 +22,54 @@ CREATE TABLE IF NOT EXISTS students (
 );
 
 -- 创建用户名索引
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
 
 -- 创建学生表索引
-CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id);
-CREATE INDEX IF NOT EXISTS idx_students_teacher_id ON students(teacher_user_id);
-CREATE INDEX IF NOT EXISTS idx_students_student_id ON students(student_id);
+CREATE INDEX IF NOT EXISTS idx_students_user_id ON students (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_students_teacher_id ON students (teacher_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_students_student_id ON students (student_id);
 
 -- 创建练习表
 CREATE TABLE IF NOT EXISTS exercises (
     id SERIAL PRIMARY KEY,
-    teacher_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    teacher_user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
     title VARCHAR(200) NOT NULL,
     description TEXT,
     content TEXT NOT NULL,
-    difficulty VARCHAR(10) NOT NULL CHECK (difficulty IN ('简单', '中等', '困难')),
+    difficulty VARCHAR(10) NOT NULL CHECK (
+        difficulty IN ('简单', '中等', '困难')
+    ),
     status VARCHAR(10) NOT NULL DEFAULT '草稿' CHECK (status IN ('草稿', '已发布')),
     deadline TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建练习表索引
-CREATE INDEX IF NOT EXISTS idx_exercises_teacher_id ON exercises(teacher_user_id);
-CREATE INDEX IF NOT EXISTS idx_exercises_status ON exercises(status);
+CREATE INDEX IF NOT EXISTS idx_exercises_teacher_id ON exercises (teacher_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_exercises_status ON exercises (status);
 
 -- 创建聊天记录表
 CREATE TABLE IF NOT EXISTS chat_records (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     record_id VARCHAR(50) NOT NULL,
     subject VARCHAR(100) NOT NULL,
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
-    feedback_type VARCHAR(10) CHECK (feedback_type IN ('like', 'dislike', NULL)),
+    feedback_type VARCHAR(10) CHECK (
+        feedback_type IN ('like', 'dislike', NULL)
+    ),
     feedback_content TEXT,
-    feedback_rating INTEGER CHECK (feedback_rating BETWEEN 1 AND 5),
+    feedback_rating INTEGER CHECK (
+        feedback_rating BETWEEN 1 AND 5
+    ),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建聊天记录表索引
-CREATE INDEX IF NOT EXISTS idx_chat_records_user_id ON chat_records(user_id);
-CREATE INDEX IF NOT EXISTS idx_chat_records_record_id ON chat_records(record_id);
+CREATE INDEX IF NOT EXISTS idx_chat_records_user_id ON chat_records (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_chat_records_record_id ON chat_records (record_id);

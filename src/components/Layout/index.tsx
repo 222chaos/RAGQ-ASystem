@@ -1,9 +1,11 @@
 import {
   BarChartOutlined,
+  DashboardOutlined,
   FileTextOutlined,
   LogoutOutlined,
   MessageOutlined,
   QuestionCircleOutlined,
+  TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, Form, Input, Layout, Menu, message, Modal, theme } from 'antd';
@@ -42,18 +44,36 @@ const getMenuItems = (userType: string) => {
     ...baseItems,
   ];
 
-  if (userType === 'teacher') {
+  if (userType === 'admin') {
+    return [
+      {
+        key: 'dashboard',
+        icon: <DashboardOutlined />,
+        label: '数据概览',
+      },
+      {
+        key: 'teacher-management',
+        icon: <TeamOutlined />,
+        label: '教师管理',
+      },
+      {
+        key: 'student-management',
+        icon: <UserOutlined />,
+        label: '学生管理',
+      },
+      {
+        key: 'feedback-management',
+        icon: <MessageOutlined />,
+        label: '反馈管理',
+      },
+    ];
+  } else if (userType === 'teacher') {
     return [
       {
         key: 'student',
         icon: <UserOutlined />,
         label: '学生管理',
       },
-      // {
-      //   key: 'knowledge',
-      //   icon: <BookOutlined />,
-      //   label: '知识库管理',
-      // },
       {
         key: 'exercise-management',
         icon: <FileTextOutlined />,
@@ -82,12 +102,8 @@ const profileMenuItem = [
     icon: <UserOutlined />,
     label: '个人中心',
   },
-  {
-    key: 'feedback',
-    icon: <MessageOutlined />,
-    label: '我的反馈',
-  },
 ];
+
 export default function ProLayout({ children }) {
   const router = useRouter();
   const { data: session } = useSession();

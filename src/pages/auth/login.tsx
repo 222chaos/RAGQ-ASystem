@@ -5,32 +5,39 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import styles from './Auth.module.css';
 
+interface LoginFormValues {
+  username: string;
+  password: string;
+  userType: 'admin' | 'teacher' | 'student';
+}
+
 export default function Login() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: LoginFormValues) => {
     setLoading(true);
-
     try {
       const result = await signIn('credentials', {
-        redirect: false,
         username: values.username,
         password: values.password,
         type: values.userType,
-        callbackUrl: '/',
+        redirect: true,
+        callbackUrl: `/?type=${values.userType}`,
       });
 
       if (result?.error) {
-        message.error(result.error);
-      } else {
-        message.success(`欢迎，${values.username}！`);
-        localStorage.setItem('userType', values.userType);
-        router.push('/');
+        message.error('用户名或密码错误');
+        return;
       }
+
+      // 保存用户类型到 localStorage
+      localStorage.setItem('userType', values.userType);
+      localStorage.setItem('username', values.username);
     } catch (error) {
-      message.error('登录过程中发生错误');
+      console.error('Login error:', error);
+      message.error('登录失败，请重试');
     } finally {
       setLoading(false);
     }
@@ -59,6 +66,7 @@ export default function Login() {
             <Radio.Group>
               <Radio.Button value="student">学生</Radio.Button>
               <Radio.Button value="teacher">教师</Radio.Button>
+              <Radio.Button value="admin">管理员</Radio.Button>
             </Radio.Group>
           </Form.Item>
 

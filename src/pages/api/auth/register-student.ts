@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         method: 'POST',
         body: {
           username: studentId,
-          password: '123456',
+          password: studentId,
           type: 'student',
         },
       } as NextApiRequest;
