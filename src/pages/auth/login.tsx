@@ -23,8 +23,7 @@ export default function Login() {
         username: values.username,
         password: values.password,
         type: values.userType,
-        redirect: true,
-        callbackUrl: `/?type=${values.userType}`,
+        redirect: false, // Disable automatic redirect to handle it manually
       });
 
       if (result?.error) {
@@ -32,9 +31,18 @@ export default function Login() {
         return;
       }
 
-      // 保存用户类型到 localStorage
-      localStorage.setItem('userType', values.userType);
-      localStorage.setItem('username', values.username);
+      if (result?.ok) {
+        // Only set localStorage when login is successful
+        localStorage.setItem('userType', values.userType);
+        localStorage.setItem('username', values.username);
+
+        // Redirect manually after successful login
+        router.push(`/?type=${values.userType}`);
+        return;
+      }
+
+      // Fallback error message if neither error nor success
+      message.error('登录失败，请重试');
     } catch (error) {
       console.error('Login error:', error);
       message.error('登录失败，请重试');
