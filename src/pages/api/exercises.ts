@@ -6,7 +6,6 @@ import { authOptions } from './auth/[...nextauth]';
 const sql = neon(process.env.DATABASE_URL!);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // 获取当前用户会话
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user?.id) {
     return res.status(401).json({ error: '未授权，请先登录' });
@@ -15,27 +14,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     try {
       const { teacher_user_id, status } = req.query;
-      let conditions = [];
-      let params = [];
 
-      // 始终过滤当前教师的练习，除非明确提供了teacher_user_id参数
-      if (teacher_user_id) {
-        conditions.push('teacher_user_id = $1');
-        params.push(teacher_user_id);
-      } else {
-        // 如果未提供teacher_user_id，默认使用当前登录用户的ID
-        conditions.push('teacher_user_id = $1');
-        params.push(session.user.id);
-      }
+      // 确定教师ID
+      const actualTeacherId = teacher_user_id || session.user.id;
+
+      // 使用条件片段构建查询
+      let query = sql`
+        SELECT 
+          id,
+          teacher_user_id,
+          title,
+          description,
+          content,
+          difficulty,
+          status,
+          TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
+          TO_CHAR(deadline, 'YYYY-MM-DD HH24:MI:SS') as deadline
+        FROM exercises
+        WHERE teacher_user_id = ${actualTeacherId}
+      `;
 
       if (status) {
-        conditions.push(`status = $${params.length + 1}`);
-        params.push(status);
+        query = sql`${query} AND status = ${status}`;
       }
 
-      const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+      query = sql`${query} ORDER BY created_at DESC`;
 
-      // 检查表是否存在，如果不存在则创建表
+      // 创建表（保持不变）
       try {
         await sql`
           CREATE TABLE IF NOT EXISTS exercises (
@@ -52,29 +57,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         `;
       } catch (err) {
         console.error('创建表出错:', err);
-        // 表已存在的错误可以忽略
       }
 
-      const result = await sql`
-        SELECT 
-          id,
-          teacher_user_id,
-          title,
-          description,
-          content,
-          difficulty,
-          status,
-          TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
-          TO_CHAR(deadline, 'YYYY-MM-DD HH24:MI:SS') as deadline
-        FROM exercises 
-        ${whereClause ? sql`${whereClause}` : sql``}
-        ORDER BY created_at DESC
-      `;
-
+      // 执行查询
+      const result = await query;
       res.status(200).json(result);
     } catch (error) {
       console.error('Error fetching exercises:', error);
-      // 返回空数组而不是错误状态，让表格显示"暂无数据"
       res.status(200).json([]);
     }
   } else if (req.method === 'POST') {

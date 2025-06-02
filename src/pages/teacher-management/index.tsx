@@ -50,7 +50,7 @@ export default function TeacherManagement() {
 
   const columns = [
     {
-      title: '教师姓名',
+      title: '教师用户名',
       dataIndex: 'name',
       key: 'name',
     },
@@ -77,9 +77,9 @@ export default function TeacherManagement() {
           <Button type="link" onClick={() => handleViewStudents(record.id)}>
             查看学生
           </Button>
-          <Button type="link" onClick={() => handleViewExercises(record.id)}>
+          {/* <Button type="link" onClick={() => handleViewExercises(record.id)}>
             查看练习
-          </Button>
+          </Button> */}
         </Space>
       ),
     },
