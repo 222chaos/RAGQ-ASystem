@@ -23,7 +23,8 @@ export default function Login() {
         username: values.username,
         password: values.password,
         type: values.userType,
-        redirect: false, // 禁用自动重定向
+        redirect: true,
+        callbackUrl: `/?type=${values.userType}`,
       });
 
       if (result?.error) {
@@ -31,15 +32,17 @@ export default function Login() {
         return;
       }
 
-      // 手动重定向
-      const callbackUrl = values.userType === 'admin' ? '/dashboard' : '/';
-      router.push(callbackUrl);
+      // 保存用户类型到 localStorage
+      localStorage.setItem('userType', values.userType);
+      localStorage.setItem('username', values.username);
     } catch (error) {
+      console.error('Login error:', error);
       message.error('登录失败，请重试');
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className={styles.container}>
       <div className={styles.authBox}>
